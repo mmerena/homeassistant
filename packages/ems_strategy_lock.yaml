@@ -1,0 +1,35 @@
+template:
+
+  - sensor:
+
+# ------------------------------------------------
+# STRATEGY CANDIDATE
+# ------------------------------------------------
+
+      - name: EMS Strategy Candidate
+        unique_id: ems_strategy_candidate
+        icon: mdi:brain
+
+        state: >
+
+          {% set energy_state = states('sensor.ems_energy_state') %}
+          {% set surplus = states('sensor.ems_pv_surplus_level') %}
+          {% set battery = states('sensor.ems_battery_state') %}
+          {% set tariff = states('sensor.energy_tariff_g13') %}
+          {% set soc = states('sensor.battery_soc') | float(0) %}
+
+          {% if battery == 'critical' %}
+            charge
+
+          {% elif tariff == 'cheap' and soc < 85 %}
+            charge
+
+          {% elif surplus in ['very_high','high','medium'] and battery != 'full' %}
+            self_use
+
+          {% elif energy_state == 'pv_export' %}
+            export
+
+          {% else %}
+            self_use
+          {% endif %}
