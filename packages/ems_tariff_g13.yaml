@@ -8,29 +8,39 @@ template:
 
       - name: Energy Tariff G13
         unique_id: energy_tariff_g13
-        icon: mdi:calendar-clock
+        icon: mdi:clock
 
         state: >
 
-          {% set h = now().hour %}
-          {% set d = now().weekday() %}
+          {% set hour = now().hour %}
+          {% set weekday = now().weekday() %}
 
-# --- WEEKEND ------------------------------------
+# WEEKEND
 
-          {% if d >= 5 %}
+          {% if weekday in [5,6] %}
             cheap
 
-# --- PEAK ---------------------------------------
+# NIGHT
 
-          {% elif 16 <= h < 21 %}
-            peak
+          {% elif hour < 7 %}
+            cheap
 
-# --- NORMAL -------------------------------------
+# MORNING
 
-          {% elif 7 <= h < 13 %}
+          {% elif hour < 13 %}
             normal
 
-# --- CHEAP --------------------------------------
+# MIDDAY
+
+          {% elif hour < 16 %}
+            cheap
+
+# EVENING PEAK
+
+          {% elif hour < 21 %}
+            peak
+
+# NIGHT
 
           {% else %}
             cheap
