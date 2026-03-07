@@ -28,14 +28,14 @@ script:
 
     sequence:
 
-      - service: modbus.write_registers
+      - service: modbus.write_register
         data:
 
           hub: foxess_modbus
           slave: 247
           address: 48010
 
-          values:
+          value:
 
             - 1
             - "{{ (0 * 256) + 0 }}"
@@ -63,6 +63,7 @@ automation:
 
       - platform: state
         entity_id:
+
           - sensor.ems_energy_strategy
           - sensor.ems_dynamic_max_soc
 
