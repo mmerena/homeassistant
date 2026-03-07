@@ -13,7 +13,6 @@ template:
         state: >
 
           {% set strategy = states('sensor.ems_energy_strategy') %}
-          {% set optimizer = states('sensor.ems_optimizer_decision') %}
 
           {% if strategy in ['charge','export','self_use','discharge'] %}
             running
@@ -23,39 +22,39 @@ template:
 
 
 # ------------------------------------------------
-# EMS CURRENT MODE
+# EMS CURRENT STRATEGY
 # ------------------------------------------------
 
-      - name: EMS Current Mode
-        unique_id: ems_current_mode
-        icon: mdi:cog
+      - name: EMS Current Strategy
+        unique_id: ems_current_strategy
+        icon: mdi:brain
 
         state: >
           {{ states('sensor.ems_energy_strategy') }}
 
 
 # ------------------------------------------------
-# EMS ECONOMIC MODE
+# EMS OPTIMIZER DECISION
 # ------------------------------------------------
 
-      - name: EMS Economic Mode
-        unique_id: ems_economic_mode
-        icon: mdi:cash
+      - name: EMS Optimizer Decision
+        unique_id: ems_optimizer_monitor
+        icon: mdi:chart-line
 
         state: >
           {{ states('sensor.ems_optimizer_decision') }}
 
 
 # ------------------------------------------------
-# EMS BATTERY PLAN
+# EMS PROFIT DECISION
 # ------------------------------------------------
 
-      - name: EMS Battery Plan
-        unique_id: ems_battery_plan
-        icon: mdi:battery-clock
+      - name: EMS Profit Decision
+        unique_id: ems_profit_monitor
+        icon: mdi:finance
 
         state: >
-          {{ states('sensor.ems_planned_battery_soc') }}
+          {{ states('sensor.ems_profit_decision') }}
 
 
 # ------------------------------------------------
@@ -63,7 +62,7 @@ template:
 # ------------------------------------------------
 
       - name: EMS Arbitrage Status
-        unique_id: ems_arbitrage_status
+        unique_id: ems_arbitrage_monitor
         icon: mdi:scale-balance
 
         state: >
@@ -71,15 +70,40 @@ template:
 
 
 # ------------------------------------------------
-# EMS PROFIT STATUS
+# EMS BATTERY PLAN
 # ------------------------------------------------
 
-      - name: EMS Profit Status
-        unique_id: ems_profit_status
-        icon: mdi:chart-line
+      - name: EMS Battery Plan
+        unique_id: ems_battery_plan_monitor
+        icon: mdi:battery-clock
 
         state: >
-          {{ states('sensor.ems_profit_decision') }}
+          {{ states('sensor.ems_planned_battery_soc') }}
+
+
+# ------------------------------------------------
+# EMS TARIFF
+# ------------------------------------------------
+
+      - name: EMS Current Tariff
+        unique_id: ems_tariff_monitor
+        icon: mdi:clock
+
+        state: >
+          {{ states('sensor.energy_tariff_g13') }}
+
+
+# ------------------------------------------------
+# EMS EXPORT PRICE
+# ------------------------------------------------
+
+      - name: EMS Export Price Monitor
+        unique_id: ems_export_price_monitor
+        unit_of_measurement: PLN/kWh
+        icon: mdi:cash
+
+        state: >
+          {{ states('sensor.ems_export_price') | float(0) }}
 
 
 # ------------------------------------------------
@@ -98,8 +122,8 @@ template:
           {% set export = states('sensor.ems_export_price') %}
           {% set soc = states('sensor.battery_soc') %}
 
-          {{ strategy ~
-             " | optimizer:" ~ optimizer ~
-             " | tariff:" ~ tariff ~
-             " | export:" ~ export ~
-             " | soc:" ~ soc }}
+          {{ strategy
+             ~ " | optimizer:" ~ optimizer
+             ~ " | tariff:" ~ tariff
+             ~ " | export:" ~ export
+             ~ " | soc:" ~ soc }}
