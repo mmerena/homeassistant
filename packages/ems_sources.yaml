@@ -2,32 +2,57 @@ template:
 
   - sensor:
 
+# ------------------------------------------------
+# PV POWER
+# ------------------------------------------------
+
       - name: pv_power
         unique_id: ems_pv_power
         unit_of_measurement: W
+        icon: mdi:solar-power
         state: >
-          {{ states('sensor.foxess_pv_total_power') | float(0) * 1000 }}
+          {{ (states('sensor.foxess_pv_total_power') | float(0)) * 1000 }}
+
+# ------------------------------------------------
+# HOUSE LOAD
+# ------------------------------------------------
 
       - name: load_power
         unique_id: ems_load_power
         unit_of_measurement: W
+        icon: mdi:home-lightning-bolt
         state: >
           {{ states('sensor.foxess_load_power') | float(0) }}
+
+# ------------------------------------------------
+# GRID POWER
+# ------------------------------------------------
 
       - name: grid_power
         unique_id: ems_grid_power
         unit_of_measurement: W
+        icon: mdi:transmission-tower
         state: >
           {{ states('sensor.foxess_grid_power') | float(0) }}
 
-      - name: battery_soc
-        unique_id: ems_battery_soc
-        unit_of_measurement: "%"
-        state: >
-          {{ states('sensor.foxess_battery_soc') | float(0) }}
+# ------------------------------------------------
+# BATTERY POWER
+# ------------------------------------------------
 
       - name: battery_power
         unique_id: ems_battery_power
         unit_of_measurement: W
+        icon: mdi:battery
         state: >
           {{ states('sensor.foxess_battery_power') | float(0) }}
+
+# ------------------------------------------------
+# BATTERY SOC
+# ------------------------------------------------
+
+      - name: battery_soc
+        unique_id: ems_battery_soc
+        unit_of_measurement: "%"
+        icon: mdi:battery-high
+        state: >
+          {{ states('sensor.foxess_battery_soc') | float(0) }}
