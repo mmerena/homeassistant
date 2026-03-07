@@ -14,9 +14,8 @@ template:
 
           {% set export_price = states('sensor.ems_export_price') | float(0) %}
           {% set import_price = states('sensor.ems_import_price') | float(0) %}
-          {% set margin = export_price - import_price %}
 
-          {{ margin | round(3) }}
+          {{ (export_price - import_price) | round(3) }}
 
 
 # ------------------------------------------------
@@ -78,21 +77,22 @@ template:
           {% set economic = states('sensor.ems_economic_score') | float(0) %}
           {% set energy = states('sensor.ems_energy_score') | float(0) %}
           {% set battery = states('sensor.ems_battery_score') | float(0) %}
+          {% set arbitrage = states('sensor.ems_arbitrage_opportunity') %}
 
-# HIGH ECONOMIC VALUE
+# HIGH PROFIT SELL
 
           {% if economic > 0.40 and battery > 1 %}
             sell
 
-# PV SURPLUS CHARGING
+# GRID ARBITRAGE
+
+          {% elif arbitrage == 'profitable' and battery < 2 %}
+            arbitrage
+
+# PV SURPLUS CHARGE
 
           {% elif energy > 1 and battery < 3 %}
             charge
-
-# GRID ARBITRAGE
-
-          {% elif economic > 0.25 and battery < 2 %}
-            arbitrage
 
 # DEFAULT
 
