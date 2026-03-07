@@ -1,0 +1,29 @@
+automation:
+
+  - alias: EMS Strategy Cooldown
+
+    trigger:
+
+      - platform: state
+        entity_id: sensor.ems_strategy_candidate
+
+    condition:
+
+      - condition: template
+        value_template: >
+
+          {% set last = states('input_datetime.ems_last_mode_change') %}
+
+          {% if last in ['unknown','unavailable',''] %}
+            true
+          {% else %}
+            {{ (as_timestamp(now()) - as_timestamp(last)) > 600 }}
+          {% endif %}
+
+    action:
+
+      - service: input_datetime.set_datetime
+        data:
+
+          entity_id: input_datetime.ems_last_mode_change
+          datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
