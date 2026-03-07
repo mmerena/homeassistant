@@ -131,7 +131,6 @@ template:
           {{ "%02d:%02d"|format(h,m) if h is not none else 'unknown' }}
 
       - name: FoxESS Dynamic Work Mode
-
         state: >
 
           {% set v = state_attr('sensor.foxess_dynamic_time_group_parsed','work_mode') %}
@@ -193,6 +192,15 @@ input_number:
     step: 100
 ```
 
+Helper dla write-if-changed:
+```yaml
+input_text:
+
+  foxess_last_write_signature:
+    name: FoxESS Last Write Signature
+    max: 255
+```
+
 Analiza ceny energii:
 ```yaml
 template:
@@ -200,26 +208,16 @@ template:
   - sensor:
 
       - name: EMS Price Level
-
         state: >
 
-          {% set p = states('sensor.energy_price') %}
+          {% set price = states('sensor.energy_price') | float(0) %}
 
-          {% if p in ['unknown','unavailable','none'] %}
-            unknown
-
+          {% if price < 0.30 %}
+            cheap
+          {% elif price > 0.80 %}
+            expensive
           {% else %}
-
-            {% set price = p | float %}
-
-            {% if price < 0.30 %}
-              cheap
-            {% elif price > 0.80 %}
-              expensive
-            {% else %}
-              normal
-            {% endif %}
-
+            normal
           {% endif %}
 ```
 
@@ -230,30 +228,20 @@ template:
   - sensor:
 
       - name: EMS Battery State
-
         state: >
 
-          {% set s = states('sensor.battery_soc') %}
+          {% set soc = states('sensor.battery_soc') | float(0) %}
 
-          {% if s in ['unknown','unavailable','none'] %}
-            unknown
-
+          {% if soc < 20 %}
+            critical
+          {% elif soc > 90 %}
+            full
           {% else %}
-
-            {% set soc = s | float %}
-
-            {% if soc < 20 %}
-              critical
-            {% elif soc > 90 %}
-              full
-            {% else %}
-              normal
-            {% endif %}
-
+            normal
           {% endif %}
 ```
 
-Główna strategia EMS:
+Strategia EMS:
 ```yaml
 template:
 
@@ -269,16 +257,12 @@ template:
 
           {% if price == 'unknown' or battery == 'unknown' %}
             self_use
-
           {% elif price == 'cheap' and battery != 'full' %}
             charge
-
           {% elif price == 'expensive' and battery != 'critical' %}
             discharge
-
           {% elif pv > 3000 %}
             export
-
           {% else %}
             self_use
           {% endif %}
@@ -335,9 +319,8 @@ script:
 
             - "{{ enable | default(1) }}"
 
-            - "{{ (0 * 256) + 0 }}"        # start 00:00
-
-            - "{{ (23 * 256) + 59 }}"      # end 23:59
+            - "{{ (0 * 256) + 0 }}"
+            - "{{ (23 * 256) + 59 }}"
 
             - "{{ work_mode | default(1) }}"
 
@@ -350,7 +333,7 @@ script:
             - 0
 ```
 
-Automatyczny kontroler EMS:
+Automatyczny kontroler EMS (write-if-changed):
 ```yaml
 automation:
 
