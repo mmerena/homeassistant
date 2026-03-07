@@ -3,7 +3,7 @@ template:
   - sensor:
 
 # ------------------------------------------------
-# BATTERY ENERGY CAPACITY (kWh)
+# BATTERY CAPACITY
 # ------------------------------------------------
 
       - name: EMS Battery Capacity
@@ -33,7 +33,7 @@ template:
 
 
 # ------------------------------------------------
-# REQUIRED ENERGY FOR TODAY
+# REQUIRED ENERGY TODAY
 # ------------------------------------------------
 
       - name: EMS Required Energy Today
@@ -77,7 +77,7 @@ template:
 
 
 # ------------------------------------------------
-# PLANNED BATTERY SOC TARGET
+# PLANNED BATTERY SOC
 # ------------------------------------------------
 
       - name: EMS Planned Battery SOC
