@@ -1,0 +1,97 @@
+template:
+
+  - sensor:
+
+# ------------------------------------------------
+# BATTERY ENERGY CAPACITY (kWh)
+# ------------------------------------------------
+
+      - name: EMS Battery Capacity
+        unique_id: ems_battery_capacity
+        unit_of_measurement: kWh
+        icon: mdi:battery
+
+        state: >
+          {{ states('input_number.battery_capacity_kwh') | float(10) }}
+
+
+# ------------------------------------------------
+# BATTERY STORED ENERGY
+# ------------------------------------------------
+
+      - name: EMS Battery Stored Energy
+        unique_id: ems_battery_stored_energy
+        unit_of_measurement: kWh
+        icon: mdi:battery-high
+
+        state: >
+
+          {% set soc = states('sensor.battery_soc') | float(0) %}
+          {% set cap = states('sensor.ems_battery_capacity') | float(10) %}
+
+          {{ (soc / 100 * cap) | round(2) }}
+
+
+# ------------------------------------------------
+# REQUIRED ENERGY FOR TODAY
+# ------------------------------------------------
+
+      - name: EMS Required Energy Today
+        unique_id: ems_required_energy_today
+        unit_of_measurement: kWh
+        icon: mdi:home-lightning-bolt
+
+        state: >
+
+          {% set load = states('sensor.ems_load_forecast_today') | float(0) %}
+          {% set pv = states('sensor.ems_pv_forecast_energy_today') | float(0) %}
+
+          {% set required = load - pv %}
+
+          {% if required > 0 %}
+            {{ required | round(2) }}
+          {% else %}
+            0
+          {% endif %}
+
+
+# ------------------------------------------------
+# PLANNED BATTERY RESERVE
+# ------------------------------------------------
+
+      - name: EMS Planned Battery Reserve
+        unique_id: ems_planned_battery_reserve
+        unit_of_measurement: kWh
+        icon: mdi:battery-clock
+
+        state: >
+
+          {% set required = states('sensor.ems_required_energy_today') | float(0) %}
+          {% set cap = states('sensor.ems_battery_capacity') | float(10) %}
+
+          {% if required > cap %}
+            {{ cap | round(2) }}
+          {% else %}
+            {{ required | round(2) }}
+          {% endif %}
+
+
+# ------------------------------------------------
+# PLANNED BATTERY SOC TARGET
+# ------------------------------------------------
+
+      - name: EMS Planned Battery SOC
+        unique_id: ems_planned_battery_soc
+        unit_of_measurement: "%"
+        icon: mdi:battery-sync
+
+        state: >
+
+          {% set reserve = states('sensor.ems_planned_battery_reserve') | float(0) %}
+          {% set cap = states('sensor.ems_battery_capacity') | float(10) %}
+
+          {% if cap > 0 %}
+            {{ ((reserve / cap) * 100) | round(0) }}
+          {% else %}
+            0
+          {% endif %}
