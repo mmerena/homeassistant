@@ -16,7 +16,7 @@ template:
 
 
 # ------------------------------------------------
-# EXPECTED LOAD TODAY
+# LOAD FORECAST TODAY
 # ------------------------------------------------
 
       - name: EMS Load Forecast Today
