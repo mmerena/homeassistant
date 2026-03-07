@@ -1,0 +1,105 @@
+template:
+
+  - sensor:
+
+# ------------------------------------------------
+# EMS SYSTEM STATUS
+# ------------------------------------------------
+
+      - name: EMS System Status
+        unique_id: ems_system_status
+        icon: mdi:power
+
+        state: >
+
+          {% set strategy = states('sensor.ems_energy_strategy') %}
+          {% set optimizer = states('sensor.ems_optimizer_decision') %}
+
+          {% if strategy in ['charge','export','self_use','discharge'] %}
+            running
+          {% else %}
+            idle
+          {% endif %}
+
+
+# ------------------------------------------------
+# EMS CURRENT MODE
+# ------------------------------------------------
+
+      - name: EMS Current Mode
+        unique_id: ems_current_mode
+        icon: mdi:cog
+
+        state: >
+          {{ states('sensor.ems_energy_strategy') }}
+
+
+# ------------------------------------------------
+# EMS ECONOMIC MODE
+# ------------------------------------------------
+
+      - name: EMS Economic Mode
+        unique_id: ems_economic_mode
+        icon: mdi:cash
+
+        state: >
+          {{ states('sensor.ems_optimizer_decision') }}
+
+
+# ------------------------------------------------
+# EMS BATTERY PLAN
+# ------------------------------------------------
+
+      - name: EMS Battery Plan
+        unique_id: ems_battery_plan
+        icon: mdi:battery-clock
+
+        state: >
+          {{ states('sensor.ems_planned_battery_soc') }}
+
+
+# ------------------------------------------------
+# EMS ARBITRAGE STATUS
+# ------------------------------------------------
+
+      - name: EMS Arbitrage Status
+        unique_id: ems_arbitrage_status
+        icon: mdi:scale-balance
+
+        state: >
+          {{ states('sensor.ems_arbitrage_opportunity') }}
+
+
+# ------------------------------------------------
+# EMS PROFIT STATUS
+# ------------------------------------------------
+
+      - name: EMS Profit Status
+        unique_id: ems_profit_status
+        icon: mdi:chart-line
+
+        state: >
+          {{ states('sensor.ems_profit_decision') }}
+
+
+# ------------------------------------------------
+# EMS SUMMARY
+# ------------------------------------------------
+
+      - name: EMS Summary
+        unique_id: ems_summary
+        icon: mdi:clipboard-text
+
+        state: >
+
+          {% set strategy = states('sensor.ems_energy_strategy') %}
+          {% set optimizer = states('sensor.ems_optimizer_decision') %}
+          {% set tariff = states('sensor.energy_tariff_g13') %}
+          {% set export = states('sensor.ems_export_price') %}
+          {% set soc = states('sensor.battery_soc') %}
+
+          {{ strategy ~
+             " | optimizer:" ~ optimizer ~
+             " | tariff:" ~ tariff ~
+             " | export:" ~ export ~
+             " | soc:" ~ soc }}
