@@ -1,7 +1,7 @@
 # homeassistant
 Dynamic Time Group
 
-yaml'''
+```yaml
 modbus:
   - name: foxess_modbus
     type: tcp
@@ -23,4 +23,4 @@ modbus:
         structure: ">10H"
         count: 10
         scan_interval: 60
-'''
+```
