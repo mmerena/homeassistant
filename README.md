@@ -1,5 +1,5 @@
 # homeassistant
-EMS (Energy Management System) na Dynamic Time Group (48010–48019).
+EMS (Energy Management System) nad Dynamic Time Group (48010–48019).
 
 Modbus – odczyt RAW block:
 ```yaml
