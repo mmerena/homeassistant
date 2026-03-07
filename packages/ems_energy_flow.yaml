@@ -1,0 +1,118 @@
+template:
+
+  - sensor:
+
+# ------------------------------------------------
+# PV → LOAD
+# ------------------------------------------------
+
+      - name: EMS PV To Load
+        unique_id: ems_pv_to_load
+        unit_of_measurement: W
+        icon: mdi:solar-power
+
+        state: >
+
+          {% set pv = states('sensor.pv_power') | float(0) %}
+          {% set load = states('sensor.load_power') | float(0) %}
+
+          {{ [pv,load] | min | round(0) }}
+
+
+# ------------------------------------------------
+# PV → BATTERY
+# ------------------------------------------------
+
+      - name: EMS PV To Battery
+        unique_id: ems_pv_to_battery
+        unit_of_measurement: W
+        icon: mdi:battery-charging
+
+        state: >
+
+          {% set battery = states('sensor.battery_power') | float(0) %}
+
+          {% if battery > 0 %}
+            {{ battery | round(0) }}
+          {% else %}
+            0
+          {% endif %}
+
+
+# ------------------------------------------------
+# BATTERY → LOAD
+# ------------------------------------------------
+
+      - name: EMS Battery To Load
+        unique_id: ems_battery_to_load
+        unit_of_measurement: W
+        icon: mdi:battery-arrow-down
+
+        state: >
+
+          {% set battery = states('sensor.battery_power') | float(0) %}
+
+          {% if battery < 0 %}
+            {{ (battery * -1) | round(0) }}
+          {% else %}
+            0
+          {% endif %}
+
+
+# ------------------------------------------------
+# PV → GRID
+# ------------------------------------------------
+
+      - name: EMS PV To Grid
+        unique_id: ems_pv_to_grid
+        unit_of_measurement: W
+        icon: mdi:transmission-tower-export
+
+        state: >
+
+          {% set grid = states('sensor.grid_power') | float(0) %}
+
+          {% if grid < 0 %}
+            {{ (grid * -1) | round(0) }}
+          {% else %}
+            0
+          {% endif %}
+
+
+# ------------------------------------------------
+# GRID → LOAD
+# ------------------------------------------------
+
+      - name: EMS Grid To Load
+        unique_id: ems_grid_to_load
+        unit_of_measurement: W
+        icon: mdi:transmission-tower-import
+
+        state: >
+
+          {% set grid = states('sensor.grid_power') | float(0) %}
+
+          {% if grid > 0 %}
+            {{ grid | round(0) }}
+          {% else %}
+            0
+          {% endif %}
+
+
+# ------------------------------------------------
+# ENERGY BALANCE
+# ------------------------------------------------
+
+      - name: EMS Energy Balance
+        unique_id: ems_energy_balance
+        unit_of_measurement: W
+        icon: mdi:scale-balance
+
+        state: >
+
+          {% set pv = states('sensor.pv_power') | float(0) %}
+          {% set load = states('sensor.load_power') | float(0) %}
+          {% set grid = states('sensor.grid_power') | float(0) %}
+          {% set battery = states('sensor.battery_power') | float(0) %}
+
+          {{ (pv + grid + battery - load) | round(0) }}
