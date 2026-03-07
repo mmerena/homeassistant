@@ -1,0 +1,68 @@
+input_number:
+
+# ------------------------------------------------
+# MIN BATTERY SOC
+# ------------------------------------------------
+
+  foxess_ems_min_soc:
+    name: FoxESS EMS Min SOC
+    icon: mdi:battery-low
+    min: 5
+    max: 50
+    step: 1
+    unit_of_measurement: "%"
+    mode: slider
+    initial: 20
+
+
+# ------------------------------------------------
+# FORCE DISCHARGE SOC
+# ------------------------------------------------
+
+  foxess_ems_fd_soc:
+    name: FoxESS EMS Force Discharge SOC
+    icon: mdi:battery-arrow-down
+    min: 5
+    max: 50
+    step: 1
+    unit_of_measurement: "%"
+    mode: slider
+    initial: 20
+
+
+# ------------------------------------------------
+# FORCE DISCHARGE POWER
+# ------------------------------------------------
+
+  foxess_ems_fd_power:
+    name: FoxESS EMS Force Discharge Power
+    icon: mdi:flash
+    min: 0
+    max: 10000
+    step: 100
+    unit_of_measurement: W
+    mode: slider
+    initial: 0
+
+
+input_text:
+
+# ------------------------------------------------
+# SIGNATURE FOR WRITE-IF-CHANGED
+# ------------------------------------------------
+
+  foxess_last_signature:
+    name: FoxESS Last Signature
+    max: 50
+
+
+input_datetime:
+
+# ------------------------------------------------
+# LAST MODE CHANGE TIME
+# ------------------------------------------------
+
+  ems_last_mode_change:
+    name: EMS Last Mode Change
+    has_date: true
+    has_time: true
