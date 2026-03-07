@@ -1,0 +1,68 @@
+template:
+
+  - sensor:
+
+# ------------------------------------------------
+# LEARNED DAILY PV ENERGY
+# ------------------------------------------------
+
+      - name: EMS Learned PV Energy
+        unique_id: ems_learned_pv_energy
+        unit_of_measurement: kWh
+        icon: mdi:solar-power
+
+        state: >
+
+          {% set pv = states('sensor.pv_energy_today') | float(0) %}
+
+          {{ pv | round(2) }}
+
+
+# ------------------------------------------------
+# LEARNED DAILY LOAD
+# ------------------------------------------------
+
+      - name: EMS Learned Load Energy
+        unique_id: ems_learned_load_energy
+        unit_of_measurement: kWh
+        icon: mdi:home-lightning-bolt
+
+        state: >
+
+          {% set load = states('sensor.load_energy_today') | float(0) %}
+
+          {{ load | round(2) }}
+
+
+# ------------------------------------------------
+# ADAPTIVE PV FORECAST
+# ------------------------------------------------
+
+      - name: EMS Adaptive PV Forecast
+        unique_id: ems_adaptive_pv_forecast
+        unit_of_measurement: kWh
+        icon: mdi:chart-line
+
+        state: >
+
+          {% set learned = states('sensor.ems_learned_pv_energy') | float(0) %}
+          {% set manual = states('input_number.pv_forecast_today') | float(0) %}
+
+          {{ ((learned + manual) / 2) | round(2) }}
+
+
+# ------------------------------------------------
+# ADAPTIVE LOAD FORECAST
+# ------------------------------------------------
+
+      - name: EMS Adaptive Load Forecast
+        unique_id: ems_adaptive_load_forecast
+        unit_of_measurement: kWh
+        icon: mdi:chart-areaspline
+
+        state: >
+
+          {% set learned = states('sensor.ems_learned_load_energy') | float(0) %}
+          {% set manual = states('input_number.load_forecast_today') | float(0) %}
+
+          {{ ((learned + manual) / 2) | round(2) }}
