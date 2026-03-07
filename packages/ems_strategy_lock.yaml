@@ -49,3 +49,17 @@ template:
           {% else %}
             self_use
           {% endif %}
+
+  - trigger:
+
+      - platform: state
+        entity_id: sensor.ems_strategy_candidate
+
+    sensor:
+
+      - name: EMS Energy Strategy
+        unique_id: ems_energy_strategy
+        icon: mdi:brain
+
+        state: >
+          {{ states('sensor.ems_strategy_candidate') }}
