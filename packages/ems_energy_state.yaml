@@ -1,0 +1,52 @@
+template:
+
+  - sensor:
+
+# ------------------------------------------------
+# ENERGY STATE ENGINE
+# ------------------------------------------------
+
+      - name: EMS Energy State
+        unique_id: ems_energy_state
+        icon: mdi:transmission-tower
+
+        state: >
+
+          {% set pv = states('sensor.pv_power') | float(0) %}
+          {% set load = states('sensor.load_power') | float(0) %}
+          {% set grid = states('sensor.grid_power') | float(0) %}
+          {% set battery = states('sensor.battery_power') | float(0) %}
+          {% set soc = states('sensor.battery_soc') | float(0) %}
+
+          {% set surplus = pv - load %}
+
+# --- GRID IMPORT --------------------------------
+
+          {% if pv < 50 and grid < -200 %}
+            grid_import
+
+# --- PV CHARGING BATTERY -------------------------
+
+          {% elif surplus > 500 and battery > 200 %}
+            pv_charge
+
+# --- PV EXPORT -----------------------------------
+
+          {% elif surplus > 500 and grid > 200 %}
+            pv_export
+
+# --- BATTERY SUPPORT ------------------------------
+
+          {% elif battery < -200 %}
+            battery_support
+
+# --- GRID EXPORT ---------------------------------
+
+          {% elif grid > 200 %}
+            grid_export
+
+# --- BALANCED ------------------------------------
+
+          {% else %}
+            balanced
+          {% endif %}
