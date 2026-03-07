@@ -3,7 +3,7 @@ template:
   - sensor:
 
 # ------------------------------------------------
-# LEARNED DAILY PV ENERGY
+# LEARNED PV ENERGY TODAY
 # ------------------------------------------------
 
       - name: EMS Learned PV Energy
@@ -13,13 +13,11 @@ template:
 
         state: >
 
-          {% set pv = states('sensor.pv_energy_today') | float(0) %}
-
-          {{ pv | round(2) }}
+          {{ states('sensor.pv_energy_today') | float(0) | round(2) }}
 
 
 # ------------------------------------------------
-# LEARNED DAILY LOAD
+# LEARNED LOAD ENERGY TODAY
 # ------------------------------------------------
 
       - name: EMS Learned Load Energy
@@ -29,9 +27,7 @@ template:
 
         state: >
 
-          {% set load = states('sensor.load_energy_today') | float(0) %}
-
-          {{ load | round(2) }}
+          {{ states('sensor.load_energy_today') | float(0) | round(2) }}
 
 
 # ------------------------------------------------
