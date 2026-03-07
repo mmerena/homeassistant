@@ -1,209 +1,267 @@
-# FoxESS EMS for Home Assistant
 
-Profesjonalny **Energy Management System (EMS)** dla falowników
-**FoxESS** oparty o **Home Assistant + Modbus TCP**.
+# FoxESS EMS for Home Assistant (README v2)
 
-System zarządza:
+## Overview
 
--   produkcją PV
--   magazynem energii
--   zakupem energii z sieci (taryfa G13)
--   sprzedażą energii
--   trybem pracy falownika
+This project implements a **modular Energy Management System (EMS)** for **FoxESS inverters** integrated with **Home Assistant via Modbus TCP**.
 
-Architektura jest **modułowa**, dzięki czemu system można łatwo
-rozwijać.
+The EMS automatically optimizes energy usage, battery charging, and grid interaction based on:
 
-------------------------------------------------------------------------
+- PV production
+- household consumption
+- battery state of charge
+- grid tariffs (G13)
+- export energy prices
+- forecasted production and demand
+- grid arbitrage opportunities
 
-# Architektura EMS
+The system is designed as a **layered architecture**, where each module performs a clearly defined task.
 
-    FoxESS Modbus
-          │
-    EMS Sources
-          │
-    EMS Analysis
-          │
-    Energy State Engine
-          │
-    Tariff Engine (G13)
-          │
-    Dynamic Battery SOC
-          │
-    EMS Strategy Engine
-          │
-    FoxESS Controller
+---
 
-------------------------------------------------------------------------
+# System Architecture
 
-# Struktura projektu
+```mermaid
+flowchart TD
 
-Pliki znajdują się w katalogu:
+A[FoxESS Inverter Modbus] --> B[foxess_parser]
+B --> C[EMS Sources]
 
-    config/packages/
+C --> D[Energy Analysis Layer]
+D --> E[Energy Flow Engine]
 
-## Lista plików
+E --> F[Prediction Engine]
+F --> G[Battery Planner]
 
-    foxess_modbus.yaml
-    ems_sources.yaml
-    ems_analysis.yaml
-    ems_energy_state.yaml
-    ems_tariff_g13.yaml
-    ems_dynamic_soc.yaml
-    ems_strategy.yaml
-    ems_control.yaml
-    ems_helpers.yaml
+G --> H[Profit Engine]
+H --> I[Grid Arbitrage Engine]
 
-------------------------------------------------------------------------
+I --> J[EMS Optimizer]
+J --> K[EMS Strategy]
 
-# FoxESS Modbus
+K --> L[Stability Layer]
+L --> M[EMS Control]
 
-Komunikacja z falownikiem przez **Modbus TCP**.
+M --> N[FoxESS Modbus Write]
+```
 
-Odczytywane dane:
+---
 
-  sensor                  opis
-  ----------------------- ----------------
-  foxess_pv_total_power   produkcja PV
-  foxess_grid_power       moc sieci
-  foxess_load_power       zużycie domu
-  foxess_battery_power    moc baterii
-  foxess_battery_soc      poziom baterii
+# Project Structure
 
-------------------------------------------------------------------------
+```
+packages/
+│
+├── foxess_parser.yaml
+├── ems_sources.yaml
+│
+├── ems_analysis.yaml
+├── ems_energy_state.yaml
+├── ems_energy_flow.yaml
+│
+├── ems_tariff_g13.yaml
+├── ems_export_price.yaml
+├── ems_profit_engine.yaml
+├── ems_grid_arbitrage.yaml
+│
+├── ems_prediction_engine.yaml
+├── ems_adaptive_learning.yaml
+│
+├── ems_battery_planner.yaml
+│
+├── ems_optimizer.yaml
+├── ems_strategy.yaml
+├── ems_stability_layer.yaml
+│
+├── ems_control.yaml
+├── ems_control_panel.yaml
+│
+├── ems_system_monitor.yaml
+├── ems_diagnostics.yaml
+│
+└── ems_helpers.yaml
+```
 
-# EMS Sources
+Total modules: ~20
 
-Warstwa abstrakcji nad danymi falownika.
+---
 
-    sensor.pv_power
-    sensor.load_power
-    sensor.grid_power
-    sensor.battery_power
-    sensor.battery_soc
+# Energy Flow Model
 
-------------------------------------------------------------------------
+The EMS builds a virtual model of energy movement inside the house.
 
-# EMS Analysis
+```mermaid
+flowchart LR
 
-Oblicza parametry energetyczne systemu.
+PV[PV Production] --> LOAD[House Load]
+PV --> BATTERY[Battery Charge]
+PV --> GRID[Grid Export]
 
-    sensor.ems_pv_surplus
-    sensor.ems_pv_surplus_level
-    sensor.ems_battery_state
-    sensor.ems_grid_state
-    sensor.ems_power_balance
+GRID --> LOAD
+BATTERY --> LOAD
 
-------------------------------------------------------------------------
+GRID --> BATTERY
+```
 
-# Energy State Engine
+This model allows the EMS to determine:
 
-Kluczowy sensor:
+- PV surplus
+- grid import/export
+- battery usage
+- energy balance errors
 
-    sensor.ems_energy_state
+---
 
-Możliwe stany:
+# Core EMS Sensors
 
-    grid_import
-    pv_charge
-    pv_export
-    battery_support
-    grid_export
-    balanced
+## Source Sensors (FoxESS)
 
-------------------------------------------------------------------------
+- sensor.pv_power
+- sensor.load_power
+- sensor.grid_power
+- sensor.battery_power
+- sensor.battery_soc
 
-# Tariff Engine (G13)
+## Energy Analysis
 
-  czas           taryfa
-  -------------- --------
-  Weekend        cheap
-  00:00--07:00   cheap
-  07:00--13:00   normal
-  13:00--16:00   cheap
-  16:00--21:00   peak
-  21:00--24:00   cheap
+- sensor.ems_pv_surplus
+- sensor.ems_pv_surplus_level
+- sensor.ems_battery_state
+- sensor.ems_grid_state
+- sensor.ems_power_balance
 
-Sensor:
+## Forecast & Prediction
 
-    sensor.energy_tariff_g13
+- sensor.ems_pv_forecast_energy_today
+- sensor.ems_load_forecast_today
+- sensor.ems_energy_balance_forecast
+- sensor.ems_target_battery_soc
 
-------------------------------------------------------------------------
+## Battery Planning
 
-# Dynamic Battery SOC
+- sensor.ems_battery_capacity
+- sensor.ems_battery_stored_energy
+- sensor.ems_required_energy_today
+- sensor.ems_planned_battery_reserve
+- sensor.ems_planned_battery_soc
 
-  czas     max SOC
-  -------- ---------
-  00--06   90
-  06--10   70
-  10--15   95
-  15--18   100
-  18--23   90
-  23--24   80
+## Economic Engine
 
-Sensor:
+- sensor.ems_export_price
+- sensor.ems_import_price
+- sensor.ems_stored_energy_value
+- sensor.ems_profit_decision
 
-    sensor.ems_dynamic_max_soc
+## Arbitrage Engine
 
-------------------------------------------------------------------------
+- sensor.ems_arbitrage_margin
+- sensor.ems_arbitrage_opportunity
+- sensor.ems_arbitrage_action
 
-# EMS Strategy Engine
+## Optimizer
 
-Decyzje EMS:
+- sensor.ems_economic_score
+- sensor.ems_energy_score
+- sensor.ems_battery_score
+- sensor.ems_optimizer_decision
 
-    charge
-    self_use
-    export
-    discharge
+## Strategy
 
-------------------------------------------------------------------------
+- sensor.ems_energy_strategy
+- sensor.ems_foxess_mode
 
-# FoxESS Controller
+## Monitoring
 
-Zapisywany blok rejestrów:
+- sensor.ems_system_status
+- sensor.ems_current_strategy
+- sensor.ems_arbitrage_status
+- sensor.ems_summary
 
-    48010–48019
+## Diagnostics
 
-Mechanizmy bezpieczeństwa:
+- sensor.ems_sensor_health
+- sensor.ems_energy_balance_check
+- sensor.ems_strategy_stability
+- sensor.ems_system_health
 
--   write-if-changed
--   debounce 5 minut
+Total sensors: ~70+
 
-------------------------------------------------------------------------
+---
 
-# Helpery
+# Decision Logic
 
-    input_number.foxess_ems_min_soc
-    input_number.foxess_ems_fd_soc
-    input_number.foxess_ems_fd_power
-    input_text.foxess_last_signature
-    input_datetime.ems_last_mode_change
+EMS strategy follows strict priority rules:
 
-------------------------------------------------------------------------
+1️⃣ Manual Override (Control Panel)
 
-# Cechy systemu
+2️⃣ Battery Protection  
+Battery SOC < critical threshold → force charge
 
-✔ inteligentne ładowanie baterii\
-✔ wykorzystanie nadwyżek PV\
-✔ obsługa taryfy G13\
-✔ dynamiczne sterowanie SOC\
-✔ stabilne przełączanie trybów falownika\
-✔ minimalizacja zapisów Modbus
+3️⃣ Profit Engine  
+If export price > stored energy value → export
 
-------------------------------------------------------------------------
+4️⃣ Grid Arbitrage  
+If import cheap & export expensive → charge
 
-# Wymagania
+5️⃣ Cheap Tariff Charging  
+Charge battery during low tariff periods
 
--   Home Assistant
--   integracja Modbus
--   falownik FoxESS
--   dostęp Modbus TCP
+6️⃣ PV Surplus Charging  
+Store excess PV energy
 
-------------------------------------------------------------------------
+7️⃣ PV Export  
+Sell excess energy when battery is full
 
-# Status projektu
+8️⃣ Default Self Consumption
 
-    EMS Core: Completed
-    FoxESS Integration: Completed
-    Strategy Engine: Completed
-    Control Layer: Completed
+---
+
+# Safety Mechanisms
+
+The EMS includes multiple safety layers:
+
+### Write‑If‑Changed Protection
+Prevents repeated writes to FoxESS registers.
+
+### Strategy Stability Layer
+Prevents rapid strategy oscillations.
+
+### Energy Balance Diagnostics
+Detects invalid power readings.
+
+### Sensor Health Monitoring
+Detects unavailable or invalid sensors.
+
+---
+
+# Current System Capabilities
+
+The EMS currently supports:
+
+- automated battery management
+- dynamic energy export decisions
+- tariff‑aware charging
+- PV surplus optimization
+- grid arbitrage
+- predictive energy planning
+- modular Home Assistant architecture
+
+---
+
+# Future Improvements
+
+Planned upgrades:
+
+- weather‑based PV forecasting
+- AI load prediction
+- battery degradation optimization
+- dynamic energy market integration
+- advanced dashboard visualization
+
+---
+
+# Author Notes
+
+This EMS was designed specifically for **FoxESS + Home Assistant advanced installations**.
+
+The architecture is intentionally modular so individual engines (prediction, optimizer, control) can evolve independently.
