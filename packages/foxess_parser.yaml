@@ -1,0 +1,136 @@
+template:
+
+  - sensor:
+
+# ------------------------------------------------
+# FOXESS RAW REGISTERS
+# ------------------------------------------------
+
+      - name: FoxESS Dynamic Time Group Enable
+        unique_id: foxess_dynamic_time_group_enable
+        icon: mdi:toggle-switch
+
+        state: >
+          {% set r = state_attr('sensor.foxess_48010_48019_time_control_raw_block','registers') %}
+          {% if r and r|length > 0 %}
+            {{ r[0] }}
+          {% else %}
+            0
+          {% endif %}
+
+
+# ------------------------------------------------
+# START TIME
+# ------------------------------------------------
+
+      - name: FoxESS Dynamic Time Group Start Time
+        unique_id: foxess_dynamic_time_group_start_time
+        icon: mdi:clock-start
+
+        state: >
+
+          {% set r = state_attr('sensor.foxess_48010_48019_time_control_raw_block','registers') %}
+
+          {% if r and r|length > 1 %}
+            {{ "%02d:%02d"|format((r[1] >> 8),(r[1] & 255)) }}
+          {% else %}
+            unknown
+          {% endif %}
+
+
+# ------------------------------------------------
+# END TIME
+# ------------------------------------------------
+
+      - name: FoxESS Dynamic Time Group End Time
+        unique_id: foxess_dynamic_time_group_end_time
+        icon: mdi:clock-end
+
+        state: >
+
+          {% set r = state_attr('sensor.foxess_48010_48019_time_control_raw_block','registers') %}
+
+          {% if r and r|length > 2 %}
+            {{ "%02d:%02d"|format((r[2] >> 8),(r[2] & 255)) }}
+          {% else %}
+            unknown
+          {% endif %}
+
+
+# ------------------------------------------------
+# WORK MODE
+# ------------------------------------------------
+
+      - name: FoxESS Dynamic Time Group Work Mode
+        unique_id: foxess_dynamic_time_group_work_mode
+        icon: mdi:cog
+
+        state: >
+
+          {% set r = state_attr('sensor.foxess_48010_48019_time_control_raw_block','registers') %}
+
+          {% if r and r|length > 3 %}
+            {{ r[3] }}
+          {% else %}
+            0
+          {% endif %}
+
+
+# ------------------------------------------------
+# MIN SOC
+# ------------------------------------------------
+
+      - name: FoxESS Dynamic Time Group Min SOC
+        unique_id: foxess_dynamic_time_group_min_soc
+        unit_of_measurement: "%"
+        icon: mdi:battery-outline
+
+        state: >
+
+          {% set r = state_attr('sensor.foxess_48010_48019_time_control_raw_block','registers') %}
+
+          {% if r and r|length > 4 %}
+            {{ r[4] }}
+          {% else %}
+            0
+          {% endif %}
+
+
+# ------------------------------------------------
+# FD SOC
+# ------------------------------------------------
+
+      - name: FoxESS Dynamic Time Group FD SOC
+        unique_id: foxess_dynamic_time_group_fd_soc
+        unit_of_measurement: "%"
+        icon: mdi:battery-alert
+
+        state: >
+
+          {% set r = state_attr('sensor.foxess_48010_48019_time_control_raw_block','registers') %}
+
+          {% if r and r|length > 5 %}
+            {{ r[5] }}
+          {% else %}
+            0
+          {% endif %}
+
+
+# ------------------------------------------------
+# FD POWER
+# ------------------------------------------------
+
+      - name: FoxESS Dynamic Time Group FD Power
+        unique_id: foxess_dynamic_time_group_fd_power
+        unit_of_measurement: W
+        icon: mdi:flash
+
+        state: >
+
+          {% set r = state_attr('sensor.foxess_48010_48019_time_control_raw_block','registers') %}
+
+          {% if r and r|length > 6 %}
+            {{ r[6] }}
+          {% else %}
+            0
+          {% endif %}
