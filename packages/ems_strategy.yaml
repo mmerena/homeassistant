@@ -2,74 +2,49 @@ template:
 
   - sensor:
 
-# ------------------------------------------------
-# EMS STRATEGY ENGINE V2
-# ------------------------------------------------
-
       - name: EMS Energy Strategy
-        unique_id: ems_energy_strategy
         icon: mdi:brain
 
         state: >
 
-          {% set energy_state = states('sensor.ems_energy_state') %}
-          {% set surplus = states('sensor.ems_pv_surplus_level') %}
-          {% set battery = states('sensor.ems_battery_state') %}
-          {% set tariff = states('sensor.energy_tariff_g13') %}
-          {% set profit = states('sensor.ems_profit_decision') %}
-          {% set soc = states('sensor.battery_soc') | float(0) %}
+          {% set override = states('sensor.ems_override_strategy') %}
 
-# ------------------------------------------------
-# PRIORITY 1 — BATTERY PROTECTION
-# ------------------------------------------------
-
-          {% if battery == 'critical' or soc < 15 %}
-            charge
-
-# ------------------------------------------------
-# PRIORITY 2 — SELL ENERGY IF PROFITABLE
-# ------------------------------------------------
-
-          {% elif profit == 'sell' and battery != 'critical' %}
-            export
-
-# ------------------------------------------------
-# PRIORITY 3 — CHEAP GRID ENERGY
-# ------------------------------------------------
-
-          {% elif tariff == 'cheap' and soc < 90 %}
-            charge
-
-# ------------------------------------------------
-# PRIORITY 4 — PV SURPLUS CHARGING
-# ------------------------------------------------
-
-          {% elif surplus in ['very_high','high','medium'] and battery != 'full' %}
-            self_use
-
-# ------------------------------------------------
-# PRIORITY 5 — PV EXPORT
-# ------------------------------------------------
-
-          {% elif energy_state == 'pv_export' %}
-            export
-
-# ------------------------------------------------
-# DEFAULT
-# ------------------------------------------------
+          {% if override not in ['auto','idle'] %}
+            {{ override }}
 
           {% else %}
-            self_use
+
+            {% set energy_state = states('sensor.ems_energy_state') %}
+            {% set surplus = states('sensor.ems_pv_surplus_level') %}
+            {% set battery = states('sensor.ems_battery_state') %}
+            {% set tariff = states('sensor.energy_tariff_g13') %}
+            {% set profit = states('sensor.ems_profit_decision') %}
+            {% set soc = states('sensor.battery_soc')|float(0) %}
+
+            {% if battery == 'critical' or soc < 15 %}
+              charge
+
+            {% elif profit == 'sell' %}
+              export
+
+            {% elif tariff == 'cheap' and soc < 90 %}
+              charge
+
+            {% elif surplus in ['very_high','high','medium'] and battery != 'full' %}
+              self_use
+
+            {% elif energy_state == 'pv_export' %}
+              export
+
+            {% else %}
+              self_use
+            {% endif %}
+
           {% endif %}
 
 
-# ------------------------------------------------
-# FOXESS MODE MAPPING
-# ------------------------------------------------
 
       - name: EMS FoxESS Mode
-        unique_id: ems_foxess_mode
-        icon: mdi:cog-transfer
 
         state: >
 
@@ -77,13 +52,10 @@ template:
 
           {% if strategy == 'charge' %}
             6
-
           {% elif strategy == 'discharge' %}
             7
-
           {% elif strategy == 'export' %}
             2
-
           {% else %}
             1
           {% endif %}
