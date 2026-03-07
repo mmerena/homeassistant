@@ -12,18 +12,14 @@ template:
 
         state: >
 
-          {% set current = states('sensor.ems_energy_strategy') %}
           {% set optimizer = states('sensor.ems_optimizer_decision') %}
 
           {% if optimizer == 'sell' %}
             export
-
           {% elif optimizer == 'charge' %}
             charge
-
           {% elif optimizer == 'arbitrage' %}
             charge
-
           {% else %}
             self_use
           {% endif %}
@@ -67,9 +63,16 @@ template:
             1
           {% endif %}
 
+
+
 automation:
 
+# ------------------------------------------------
+# STRATEGY COOLDOWN
+# ------------------------------------------------
+
   - alias: EMS Strategy Stability Control
+    id: ems_strategy_stability_control
 
     trigger:
       - platform: state
