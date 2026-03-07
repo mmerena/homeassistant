@@ -2,75 +2,41 @@ template:
 
   - sensor:
 
-# ------------------------------------------------
-# IMPORT ENERGY PRICE (BASED ON G13)
-# ------------------------------------------------
-
       - name: EMS Import Price
-        unique_id: ems_import_price
         unit_of_measurement: PLN/kWh
-        icon: mdi:cash
-
         state: >
 
           {% set tariff = states('sensor.energy_tariff_g13') %}
 
           {% if tariff == 'peak' %}
-            1.20
-
+            1.2
           {% elif tariff == 'normal' %}
-            0.80
-
+            0.8
           {% else %}
-            0.50
+            0.5
           {% endif %}
 
 
-# ------------------------------------------------
-# BATTERY ROUNDTRIP EFFICIENCY
-# ------------------------------------------------
-
-      - name: EMS Battery Efficiency
-        unique_id: ems_battery_efficiency
-        unit_of_measurement: "%"
-        icon: mdi:battery-heart
-
-        state: 90
-
-
-# ------------------------------------------------
-# FUTURE VALUE OF STORED ENERGY
-# ------------------------------------------------
-
       - name: EMS Stored Energy Value
-        unique_id: ems_stored_energy_value
         unit_of_measurement: PLN/kWh
-        icon: mdi:chart-line
 
         state: >
 
-          {% set import_price = states('sensor.ems_import_price') | float(0) %}
-          {% set eff = states('sensor.ems_battery_efficiency') | float(90) / 100 %}
+          {% set import_price = states('sensor.ems_import_price')|float(0) %}
+          {% set eff = 0.9 %}
 
-          {{ (import_price * eff) | round(3) }}
+          {{ import_price * eff }}
 
-
-# ------------------------------------------------
-# PROFIT DECISION
-# ------------------------------------------------
 
       - name: EMS Profit Decision
-        unique_id: ems_profit_decision
-        icon: mdi:finance
 
         state: >
 
-          {% set export_price = states('sensor.ems_export_price') | float(0) %}
-          {% set stored_value = states('sensor.ems_stored_energy_value') | float(0) %}
+          {% set export_price = states('sensor.ems_export_price')|float(0) %}
+          {% set stored = states('sensor.ems_stored_energy_value')|float(0) %}
 
-          {% if export_price > stored_value %}
+          {% if export_price > stored %}
             sell
-
           {% else %}
             store
           {% endif %}
