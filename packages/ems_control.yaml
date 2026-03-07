@@ -1,0 +1,135 @@
+script:
+
+# ------------------------------------------------
+# WRITE FOXESS TIME GROUP
+# ------------------------------------------------
+
+  foxess_dynamic_time_group_write:
+
+    alias: FoxESS Dynamic Time Group Write
+    mode: single
+
+    fields:
+
+      work_mode:
+        description: FoxESS work mode
+
+      max_soc:
+        description: Maximum SOC
+
+      min_soc:
+        description: Minimum SOC
+
+      fd_soc:
+        description: Force discharge SOC
+
+      fd_power:
+        description: Force discharge power
+
+    sequence:
+
+      - service: modbus.write_registers
+        data:
+
+          hub: foxess_modbus
+          slave: 247
+          address: 48010
+
+          values:
+
+            - 1
+            - "{{ (0 * 256) + 0 }}"
+            - "{{ (23 * 256) + 59 }}"
+
+            - "{{ (work_mode | default(1)) | int }}"
+            - "{{ (max_soc | default(100)) | int }}"
+            - "{{ (min_soc | default(20)) | int }}"
+            - "{{ (fd_soc | default(20)) | int }}"
+            - "{{ (fd_power | default(0)) | int }}"
+
+            - 0
+            - 0
+
+
+# ------------------------------------------------
+# EMS CONTROLLER
+# ------------------------------------------------
+
+automation:
+
+  - alias: EMS FoxESS Controller
+
+    trigger:
+
+      - platform: state
+        entity_id:
+          - sensor.ems_energy_strategy
+          - sensor.ems_dynamic_max_soc
+
+    condition:
+
+# ------------------------------------------------
+# WRITE IF CHANGED
+# ------------------------------------------------
+
+      - condition: template
+        value_template: >
+
+          {% set work_mode = states('sensor.ems_foxess_mode') | int(1) %}
+          {% set max_soc = states('sensor.ems_dynamic_max_soc') | int(100) %}
+          {% set min_soc = states('input_number.foxess_ems_min_soc') | int(20) %}
+          {% set fd_soc = states('input_number.foxess_ems_fd_soc') | int(20) %}
+          {% set fd_power = states('input_number.foxess_ems_fd_power') | int(0) %}
+
+          {% set signature =
+            work_mode ~ '-' ~
+            max_soc ~ '-' ~
+            min_soc ~ '-' ~
+            fd_soc ~ '-' ~
+            fd_power %}
+
+          {{ signature != states('input_text.foxess_last_signature') }}
+
+# ------------------------------------------------
+# DEBOUNCE 5 MIN
+# ------------------------------------------------
+
+      - condition: template
+        value_template: >
+
+          {% set last = states('input_datetime.ems_last_mode_change') %}
+
+          {% if last in ['unknown','unavailable',''] %}
+            true
+          {% else %}
+            {{ (as_timestamp(now()) - as_timestamp(last)) > 300 }}
+          {% endif %}
+
+    action:
+
+      - service: script.foxess_dynamic_time_group_write
+        data:
+
+          work_mode: "{{ states('sensor.ems_foxess_mode') | int(1) }}"
+          max_soc: "{{ states('sensor.ems_dynamic_max_soc') | int(100) }}"
+          min_soc: "{{ states('input_number.foxess_ems_min_soc') | int(20) }}"
+          fd_soc: "{{ states('input_number.foxess_ems_fd_soc') | int(20) }}"
+          fd_power: "{{ states('input_number.foxess_ems_fd_power') | int(0) }}"
+
+      - service: input_text.set_value
+        data:
+
+          entity_id: input_text.foxess_last_signature
+
+          value: >
+            {{ states('sensor.ems_foxess_mode') | int(1) ~ '-' ~
+               states('sensor.ems_dynamic_max_soc') | int(100) ~ '-' ~
+               states('input_number.foxess_ems_min_soc') | int(20) ~ '-' ~
+               states('input_number.foxess_ems_fd_soc') | int(20) ~ '-' ~
+               states('input_number.foxess_ems_fd_power') | int(0) }}
+
+      - service: input_datetime.set_datetime
+        data:
+
+          entity_id: input_datetime.ems_last_mode_change
+          datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
