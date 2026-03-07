@@ -40,8 +40,8 @@ modbus:
 
     sensors:
 
-      - name: FoxESS 48010-48019 Dynamic Time Group Raw
-        unique_id: foxess_48010_48019_dynamic_time_group_raw
+      - name: FoxESS Dynamic Time Group Raw
+        unique_id: foxess_dynamic_time_group_raw
         slave: 247
         address: 48010
         input_type: holding
@@ -51,27 +51,90 @@ modbus:
         scan_interval: 60
 ```
 
+Parsowanie Dynamic Time Group:
+```yaml
+template:
+
+  - trigger:
+
+      - platform: state
+        entity_id: sensor.foxess_dynamic_time_group_raw
+
+    sensor:
+
+      - name: FoxESS Dynamic Time Group Parsed
+        unique_id: foxess_dynamic_time_group_parsed
+
+        state: >
+          {% set r = state_attr('sensor.foxess_dynamic_time_group_raw','registers') %}
+          {{ 'ok' if r is not none and r | length >= 8 else 'unavailable' }}
+
+        attributes:
+
+          enable: >
+            {% set r = state_attr('sensor.foxess_dynamic_time_group_raw','registers') %}
+            {{ r[0] if r is not none else none }}
+
+          start_hour: >
+            {% set r = state_attr('sensor.foxess_dynamic_time_group_raw','registers') %}
+            {{ (r[1] // 256) if r is not none else none }}
+
+          start_min: >
+            {% set r = state_attr('sensor.foxess_dynamic_time_group_raw','registers') %}
+            {{ (r[1] % 256) if r is not none else none }}
+
+          end_hour: >
+            {% set r = state_attr('sensor.foxess_dynamic_time_group_raw','registers') %}
+            {{ (r[2] // 256) if r is not none else none }}
+
+          end_min: >
+            {% set r = state_attr('sensor.foxess_dynamic_time_group_raw','registers') %}
+            {{ (r[2] % 256) if r is not none else none }}
+
+          work_mode: >
+            {% set r = state_attr('sensor.foxess_dynamic_time_group_raw','registers') %}
+            {{ r[3] if r is not none else none }}
+
+          max_soc: >
+            {% set r = state_attr('sensor.foxess_dynamic_time_group_raw','registers') %}
+            {{ r[4] if r is not none else none }}
+
+          min_soc: >
+            {% set r = state_attr('sensor.foxess_dynamic_time_group_raw','registers') %}
+            {{ r[5] if r is not none else none }}
+
+          fd_soc: >
+            {% set r = state_attr('sensor.foxess_dynamic_time_group_raw','registers') %}
+            {{ r[6] if r is not none else none }}
+
+          fd_power: >
+            {% set r = state_attr('sensor.foxess_dynamic_time_group_raw','registers') %}
+            {{ r[7] if r is not none else none }}
+```
+
 Dekodowanie Dynamic Time Group:
 ```yaml
 template:
 
   - sensor:
 
-      - name: FoxESS Dynamic Time Group Start Time
+      - name: FoxESS Dynamic Start Time
         state: >
-          {% set r = state_attr('sensor.foxess_48010_48019_dynamic_time_group_raw','registers') %}
-          {{ "%02d:%02d"|format((r[1] >> 8),(r[1] & 255)) }}
+          {% set h = state_attr('sensor.foxess_dynamic_time_group_parsed','start_hour') %}
+          {% set m = state_attr('sensor.foxess_dynamic_time_group_parsed','start_min') %}
+          {{ "%02d:%02d"|format(h,m) if h is not none else 'unknown' }}
 
-      - name: FoxESS Dynamic Time Group End Time
+      - name: FoxESS Dynamic End Time
         state: >
-          {% set r = state_attr('sensor.foxess_48010_48019_dynamic_time_group_raw','registers') %}
-          {{ "%02d:%02d"|format((r[2] >> 8),(r[2] & 255)) }}
+          {% set h = state_attr('sensor.foxess_dynamic_time_group_parsed','end_hour') %}
+          {% set m = state_attr('sensor.foxess_dynamic_time_group_parsed','end_min') %}
+          {{ "%02d:%02d"|format(h,m) if h is not none else 'unknown' }}
 
-      - name: FoxESS Dynamic Time Group Work Mode
+      - name: FoxESS Dynamic Work Mode
+
         state: >
 
-          {% set r = state_attr('sensor.foxess_48010_48019_dynamic_time_group_raw','registers') %}
-          {% set v = r[3] %}
+          {% set v = state_attr('sensor.foxess_dynamic_time_group_parsed','work_mode') %}
 
           {% if v == 1 %}Self Use
           {% elif v == 2 %}Feed In
@@ -80,25 +143,25 @@ template:
           {% else %}Unsupported
           {% endif %}
 
-      - name: FoxESS Dynamic Time Group Max SOC
+      - name: FoxESS Dynamic Max SOC
         unit_of_measurement: "%"
         state: >
-          {{ state_attr('sensor.foxess_48010_48019_dynamic_time_group_raw','registers')[4] }}
+          {{ state_attr('sensor.foxess_dynamic_time_group_parsed','max_soc') }}
 
-      - name: FoxESS Dynamic Time Group Min SOC
+      - name: FoxESS Dynamic Min SOC
         unit_of_measurement: "%"
         state: >
-          {{ state_attr('sensor.foxess_48010_48019_dynamic_time_group_raw','registers')[5] }}
+          {{ state_attr('sensor.foxess_dynamic_time_group_parsed','min_soc') }}
 
-      - name: FoxESS Dynamic Time Group FD SOC
+      - name: FoxESS Dynamic FD SOC
         unit_of_measurement: "%"
         state: >
-          {{ state_attr('sensor.foxess_48010_48019_dynamic_time_group_raw','registers')[6] }}
+          {{ state_attr('sensor.foxess_dynamic_time_group_parsed','fd_soc') }}
 
-      - name: FoxESS Dynamic Time Group FD Power
+      - name: FoxESS Dynamic FD Power
         unit_of_measurement: W
         state: >
-          {{ state_attr('sensor.foxess_48010_48019_dynamic_time_group_raw','registers')[7] }}
+          {{ state_attr('sensor.foxess_dynamic_time_group_parsed','fd_power') }}
 ```
 
 Parametry EMS (sterowanie):
@@ -110,28 +173,24 @@ input_number:
     min: 10
     max: 100
     step: 1
-    unit_of_measurement: "%"
 
   foxess_ems_min_soc:
     name: EMS Min SOC
     min: 10
     max: 100
     step: 1
-    unit_of_measurement: "%"
 
   foxess_ems_fd_soc:
     name: EMS Force Discharge SOC
     min: 10
     max: 100
     step: 1
-    unit_of_measurement: "%"
 
   foxess_ems_fd_power:
     name: EMS Discharge Power
     min: 0
     max: 10000
     step: 100
-    unit_of_measurement: W
 ```
 
 Analiza ceny energii:
@@ -144,16 +203,23 @@ template:
 
         state: >
 
-          {% set price = states('sensor.energy_price')|float %}
+          {% set p = states('sensor.energy_price') %}
 
-          {% if price < 0.30 %}
-            cheap
-
-          {% elif price > 0.80 %}
-            expensive
+          {% if p in ['unknown','unavailable','none'] %}
+            unknown
 
           {% else %}
-            normal
+
+            {% set price = p | float %}
+
+            {% if price < 0.30 %}
+              cheap
+            {% elif price > 0.80 %}
+              expensive
+            {% else %}
+              normal
+            {% endif %}
+
           {% endif %}
 ```
 
@@ -167,16 +233,23 @@ template:
 
         state: >
 
-          {% set soc = states('sensor.battery_soc')|float %}
+          {% set s = states('sensor.battery_soc') %}
 
-          {% if soc < 20 %}
-            critical
-
-          {% elif soc > 90 %}
-            full
+          {% if s in ['unknown','unavailable','none'] %}
+            unknown
 
           {% else %}
-            normal
+
+            {% set soc = s | float %}
+
+            {% if soc < 20 %}
+              critical
+            {% elif soc > 90 %}
+              full
+            {% else %}
+              normal
+            {% endif %}
+
           {% endif %}
 ```
 
@@ -192,9 +265,12 @@ template:
 
           {% set price = states('sensor.ems_price_level') %}
           {% set battery = states('sensor.ems_battery_state') %}
-          {% set pv = states('sensor.pv_power')|float %}
+          {% set pv = states('sensor.pv_power') | float(0) %}
 
-          {% if price == 'cheap' and battery != 'full' %}
+          {% if price == 'unknown' or battery == 'unknown' %}
+            self_use
+
+          {% elif price == 'cheap' and battery != 'full' %}
             charge
 
           {% elif price == 'expensive' and battery != 'critical' %}
@@ -240,10 +316,6 @@ script:
     fields:
 
       enable:
-      start_hour:
-      start_min:
-      end_hour:
-      end_min:
       work_mode:
       max_soc:
       min_soc:
@@ -261,14 +333,19 @@ script:
 
           values:
 
-            - "{{ enable }}"
-            - "{{ (start_hour << 8) + start_min }}"
-            - "{{ (end_hour << 8) + end_min }}"
-            - "{{ work_mode }}"
-            - "{{ max_soc }}"
-            - "{{ min_soc }}"
-            - "{{ fd_soc }}"
-            - "{{ fd_power }}"
+            - "{{ enable | default(1) }}"
+
+            - "{{ (0 * 256) + 0 }}"        # start 00:00
+
+            - "{{ (23 * 256) + 59 }}"      # end 23:59
+
+            - "{{ work_mode | default(1) }}"
+
+            - "{{ max_soc | default(100) }}"
+            - "{{ min_soc | default(20) }}"
+            - "{{ fd_soc | default(20) }}"
+            - "{{ fd_power | default(0) }}"
+
             - 0
             - 0
 ```
@@ -283,28 +360,54 @@ automation:
 
       - platform: state
         entity_id:
-
           - sensor.ems_energy_strategy
           - sensor.ems_foxess_mode
+          - input_number.foxess_ems_max_soc
+          - input_number.foxess_ems_min_soc
+          - input_number.foxess_ems_fd_soc
+          - input_number.foxess_ems_fd_power
+
+    condition:
+
+      - condition: template
+        value_template: >
+
+          {% set work_mode = states('sensor.ems_foxess_mode') | int(1) %}
+          {% set max_soc = states('input_number.foxess_ems_max_soc') | int(100) %}
+          {% set min_soc = states('input_number.foxess_ems_min_soc') | int(20) %}
+          {% set fd_soc = states('input_number.foxess_ems_fd_soc') | int(20) %}
+          {% set fd_power = states('input_number.foxess_ems_fd_power') | int(0) %}
+
+          {% set signature = work_mode ~ '-' ~ max_soc ~ '-' ~ min_soc ~ '-' ~ fd_soc ~ '-' ~ fd_power %}
+
+          {{ signature != states('input_text.foxess_last_write_signature') }}
 
     action:
 
-      - service: script.foxess_dynamic_time_group_write
+      - variables:
 
+          work_mode: "{{ states('sensor.ems_foxess_mode') | int(1) }}"
+          max_soc: "{{ states('input_number.foxess_ems_max_soc') | int(100) }}"
+          min_soc: "{{ states('input_number.foxess_ems_min_soc') | int(20) }}"
+          fd_soc: "{{ states('input_number.foxess_ems_fd_soc') | int(20) }}"
+          fd_power: "{{ states('input_number.foxess_ems_fd_power') | int(0) }}"
+
+          signature: >
+            {{ work_mode ~ '-' ~ max_soc ~ '-' ~ min_soc ~ '-' ~ fd_soc ~ '-' ~ fd_power }}
+
+      - service: script.foxess_dynamic_time_group_write
         data:
 
           enable: 1
+          work_mode: "{{ work_mode }}"
+          max_soc: "{{ max_soc }}"
+          min_soc: "{{ min_soc }}"
+          fd_soc: "{{ fd_soc }}"
+          fd_power: "{{ fd_power }}"
 
-          start_hour: 0
-          start_min: 0
+      - service: input_text.set_value
+        data:
 
-          end_hour: 23
-          end_min: 59
-
-          work_mode: "{{ states('sensor.ems_foxess_mode')|int }}"
-
-          max_soc: "{{ states('input_number.foxess_ems_max_soc')|int }}"
-          min_soc: "{{ states('input_number.foxess_ems_min_soc')|int }}"
-          fd_soc: "{{ states('input_number.foxess_ems_fd_soc')|int }}"
-          fd_power: "{{ states('input_number.foxess_ems_fd_power')|int }}"
+          entity_id: input_text.foxess_last_write_signature
+          value: "{{ signature }}"
 ```
