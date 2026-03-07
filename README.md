@@ -251,20 +251,31 @@ template:
 
         state: >
 
-          {% set price = states('sensor.ems_price_level') %}
+          {% set price_raw = states('sensor.energy_price') %}
+          {% set price = price_raw | float(0) %}
           {% set battery = states('sensor.ems_battery_state') %}
           {% set pv = states('sensor.pv_power') | float(0) %}
 
-          {% if price == 'unknown' or battery == 'unknown' %}
-            self_use
-          {% elif price == 'cheap' and battery != 'full' %}
-            charge
-          {% elif price == 'expensive' and battery != 'critical' %}
-            discharge
-          {% elif pv > 3000 %}
-            export
+          {% if price_raw in ['unknown','unavailable','none'] %}
+
+            {% if pv > 3000 %}
+              export
+            {% else %}
+              self_use
+            {% endif %}
+
           {% else %}
-            self_use
+
+            {% if price < 0.30 and battery != 'full' %}
+              charge
+            {% elif price > 0.80 and battery != 'critical' %}
+              discharge
+            {% elif pv > 3000 %}
+              export
+            {% else %}
+              self_use
+            {% endif %}
+
           {% endif %}
 ```
 
