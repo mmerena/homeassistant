@@ -16,6 +16,7 @@ template:
           {% set surplus = states('sensor.ems_pv_surplus_level') %}
           {% set battery = states('sensor.ems_battery_state') %}
           {% set tariff = states('sensor.energy_tariff_g13') %}
+          {% set export_price = states('sensor.ems_export_price_level') %}
           {% set soc = states('sensor.battery_soc') | float(0) %}
 
 # --- BATTERY PROTECTION --------------------------
@@ -28,12 +29,17 @@ template:
           {% elif tariff == 'cheap' and soc < 90 %}
             charge
 
+# --- EXPORT WHEN PRICE HIGH ----------------------
+
+          {% elif export_price in ['very_high','high'] and battery != 'critical' %}
+            export
+
 # --- PV SURPLUS ----------------------------------
 
           {% elif surplus in ['very_high','high','medium'] and battery != 'full' %}
             self_use
 
-# --- EXPORT WHEN BATTERY FULL --------------------
+# --- PV EXPORT -----------------------------------
 
           {% elif energy_state == 'pv_export' %}
             export
@@ -59,10 +65,13 @@ template:
 
           {% if strategy == 'charge' %}
             6
+
           {% elif strategy == 'discharge' %}
             7
+
           {% elif strategy == 'export' %}
             2
+
           {% else %}
             1
           {% endif %}
