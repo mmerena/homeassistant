@@ -1,0 +1,33 @@
+template:
+
+  - sensor:
+
+      - name: pv_power
+        unique_id: ems_pv_power
+        unit_of_measurement: W
+        state: >
+          {{ states('sensor.foxess_pv_total_power') | float(0) * 1000 }}
+
+      - name: load_power
+        unique_id: ems_load_power
+        unit_of_measurement: W
+        state: >
+          {{ states('sensor.foxess_load_power') | float(0) }}
+
+      - name: grid_power
+        unique_id: ems_grid_power
+        unit_of_measurement: W
+        state: >
+          {{ states('sensor.foxess_grid_power') | float(0) }}
+
+      - name: battery_soc
+        unique_id: ems_battery_soc
+        unit_of_measurement: "%"
+        state: >
+          {{ states('sensor.foxess_battery_soc') | float(0) }}
+
+      - name: battery_power
+        unique_id: ems_battery_power
+        unit_of_measurement: W
+        state: >
+          {{ states('sensor.foxess_battery_power') | float(0) }}
