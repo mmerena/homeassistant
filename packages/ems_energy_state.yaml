@@ -8,7 +8,7 @@ template:
 
       - name: EMS Energy State
         unique_id: ems_energy_state
-        icon: mdi:transmission-tower
+        icon: mdi:lightning-bolt
 
         state: >
 
@@ -16,24 +16,28 @@ template:
           {% set load = states('sensor.load_power') | float(0) %}
           {% set grid = states('sensor.grid_power') | float(0) %}
           {% set battery = states('sensor.battery_power') | float(0) %}
-          {% set soc = states('sensor.battery_soc') | float(0) %}
 
-          {% set surplus = pv - load %}
+# PV CHARGING BATTERY
 
-          {% if pv < 50 and grid < -200 %}
-            grid_import
-
-          {% elif surplus > 500 and battery > 200 %}
+          {% if pv > load and battery > 100 %}
             pv_charge
 
-          {% elif surplus > 500 and grid > 200 %}
+# PV EXPORT
+
+          {% elif pv > load and grid < -200 %}
             pv_export
+
+# GRID IMPORT
+
+          {% elif grid > 200 %}
+            grid_import
+
+# BATTERY SUPPORT
 
           {% elif battery < -200 %}
             battery_support
 
-          {% elif grid > 200 %}
-            grid_export
+# BALANCED SYSTEM
 
           {% else %}
             balanced
