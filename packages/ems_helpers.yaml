@@ -45,6 +45,21 @@ input_number:
     initial: 0
 
 
+# ------------------------------------------------
+# EXPORT ENERGY PRICE
+# ------------------------------------------------
+
+  energy_export_price:
+    name: Energy Export Price
+    icon: mdi:cash
+    min: 0
+    max: 2
+    step: 0.01
+    unit_of_measurement: PLN/kWh
+    mode: box
+    initial: 0.40
+
+
 input_text:
 
 # ------------------------------------------------
