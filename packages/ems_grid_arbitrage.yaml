@@ -1,0 +1,63 @@
+template:
+
+  - sensor:
+
+# ------------------------------------------------
+# ARBITRAGE MARGIN
+# ------------------------------------------------
+
+      - name: EMS Arbitrage Margin
+        unique_id: ems_arbitrage_margin
+        unit_of_measurement: PLN/kWh
+        icon: mdi:chart-line
+
+        state: >
+
+          {% set export_price = states('sensor.ems_export_price') | float(0) %}
+          {% set import_price = states('sensor.ems_import_price') | float(0) %}
+
+          {{ (export_price - import_price) | round(3) }}
+
+
+# ------------------------------------------------
+# ARBITRAGE OPPORTUNITY
+# ------------------------------------------------
+
+      - name: EMS Arbitrage Opportunity
+        unique_id: ems_arbitrage_opportunity
+        icon: mdi:scale-balance
+
+        state: >
+
+          {% set margin = states('sensor.ems_arbitrage_margin') | float(0) %}
+          {% set threshold = states('input_number.arbitrage_threshold') | float(0.20) %}
+
+          {% if margin > threshold %}
+            profitable
+          {% else %}
+            none
+          {% endif %}
+
+
+# ------------------------------------------------
+# ARBITRAGE ACTION
+# ------------------------------------------------
+
+      - name: EMS Arbitrage Action
+        unique_id: ems_arbitrage_action
+        icon: mdi:flash
+
+        state: >
+
+          {% set opportunity = states('sensor.ems_arbitrage_opportunity') %}
+          {% set soc = states('sensor.battery_soc') | float(0) %}
+
+          {% if opportunity == 'profitable' and soc < 90 %}
+            charge
+
+          {% elif opportunity == 'profitable' and soc > 60 %}
+            discharge
+
+          {% else %}
+            idle
+          {% endif %}
