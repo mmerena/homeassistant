@@ -20,32 +20,20 @@ template:
 
           {% set surplus = pv - load %}
 
-# --- GRID IMPORT --------------------------------
-
           {% if pv < 50 and grid < -200 %}
             grid_import
-
-# --- PV CHARGING BATTERY -------------------------
 
           {% elif surplus > 500 and battery > 200 %}
             pv_charge
 
-# --- PV EXPORT -----------------------------------
-
           {% elif surplus > 500 and grid > 200 %}
             pv_export
-
-# --- BATTERY SUPPORT ------------------------------
 
           {% elif battery < -200 %}
             battery_support
 
-# --- GRID EXPORT ---------------------------------
-
           {% elif grid > 200 %}
             grid_export
-
-# --- BALANCED ------------------------------------
 
           {% else %}
             balanced
