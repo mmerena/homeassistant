@@ -26,7 +26,7 @@ sensor.battery_soc
 sensor.battery_power
 ```
 
-Modbus – Dynamic Time Group RAW:
+Modbus RAW – Dynamic Time Group:
 ```yaml
 modbus:
   - name: foxess_modbus
@@ -51,12 +51,11 @@ modbus:
         scan_interval: 60
 ```
 
-Parsowanie Dynamic Time Group:
+Parser rejestrów FoxESS:
 ```yaml
 template:
 
   - trigger:
-
       - platform: state
         entity_id: sensor.foxess_dynamic_time_group_raw
 
@@ -70,10 +69,6 @@ template:
           {{ 'ok' if r is not none and r | length >= 8 else 'unavailable' }}
 
         attributes:
-
-          enable: >
-            {% set r = state_attr('sensor.foxess_dynamic_time_group_raw','registers') %}
-            {{ r[0] if r is not none else none }}
 
           start_hour: >
             {% set r = state_attr('sensor.foxess_dynamic_time_group_raw','registers') %}
@@ -112,60 +107,47 @@ template:
             {{ r[7] if r is not none else none }}
 ```
 
-Dekodowanie Dynamic Time Group:
+Sensory diagnostyczne FoxESS:
 ```yaml
 template:
 
   - sensor:
 
-      - name: FoxESS Dynamic Start Time
+      - name: FoxESS Work Mode
         state: >
-          {% set h = state_attr('sensor.foxess_dynamic_time_group_parsed','start_hour') %}
-          {% set m = state_attr('sensor.foxess_dynamic_time_group_parsed','start_min') %}
-          {{ "%02d:%02d"|format(h,m) if h is not none else 'unknown' }}
+          {{ state_attr('sensor.foxess_dynamic_time_group_parsed','work_mode') }}
 
-      - name: FoxESS Dynamic End Time
-        state: >
-          {% set h = state_attr('sensor.foxess_dynamic_time_group_parsed','end_hour') %}
-          {% set m = state_attr('sensor.foxess_dynamic_time_group_parsed','end_min') %}
-          {{ "%02d:%02d"|format(h,m) if h is not none else 'unknown' }}
-
-      - name: FoxESS Dynamic Work Mode
-        state: >
-
-          {% set v = state_attr('sensor.foxess_dynamic_time_group_parsed','work_mode') %}
-
-          {% if v == 1 %}Self Use
-          {% elif v == 2 %}Feed In
-          {% elif v == 6 %}Force Charge
-          {% elif v == 7 %}Force Discharge
-          {% else %}Unsupported
-          {% endif %}
-
-      - name: FoxESS Dynamic Max SOC
+      - name: FoxESS Max SOC
         unit_of_measurement: "%"
         state: >
           {{ state_attr('sensor.foxess_dynamic_time_group_parsed','max_soc') }}
 
-      - name: FoxESS Dynamic Min SOC
+      - name: FoxESS Min SOC
         unit_of_measurement: "%"
         state: >
           {{ state_attr('sensor.foxess_dynamic_time_group_parsed','min_soc') }}
 
-      - name: FoxESS Dynamic FD SOC
+      - name: FoxESS FD SOC
         unit_of_measurement: "%"
         state: >
           {{ state_attr('sensor.foxess_dynamic_time_group_parsed','fd_soc') }}
 
-      - name: FoxESS Dynamic FD Power
+      - name: FoxESS FD Power
         unit_of_measurement: W
         state: >
           {{ state_attr('sensor.foxess_dynamic_time_group_parsed','fd_power') }}
 ```
 
-Parametry EMS (sterowanie):
+Parametry EMS:
 ```yaml
 input_number:
+
+  energy_export_price:
+    name: Energy Export Price
+    min: 0
+    max: 2
+    step: 0.01
+    unit_of_measurement: PLN/kWh
 
   foxess_ems_max_soc:
     name: EMS Max SOC
@@ -192,7 +174,7 @@ input_number:
     step: 100
 ```
 
-Helper dla write-if-changed:
+Helper write-if-changed:
 ```yaml
 input_text:
 
@@ -201,23 +183,48 @@ input_text:
     max: 255
 ```
 
-Analiza ceny energii:
+Taryfa G13:
 ```yaml
 template:
 
   - sensor:
 
-      - name: EMS Price Level
+      - name: Energy Tariff
+
         state: >
 
-          {% set price = states('sensor.energy_price') | float(0) %}
+          {% set h = now().hour %}
+          {% set d = now().weekday() %}
 
-          {% if price < 0.30 %}
+          {% if d >= 5 %}
             cheap
-          {% elif price > 0.80 %}
-            expensive
+          {% elif h < 6 %}
+            cheap
+          {% elif h >= 16 and h < 22 %}
+            peak
           {% else %}
             normal
+          {% endif %}
+```
+
+Analiza PV:
+```yaml
+template:
+
+  - sensor:
+
+      - name: EMS PV Level
+
+        state: >
+
+          {% set pv = states('sensor.pv_power') | float(0) %}
+
+          {% if pv > 4000 %}
+            high
+          {% elif pv > 1500 %}
+            medium
+          {% else %}
+            low
           {% endif %}
 ```
 
@@ -228,16 +235,38 @@ template:
   - sensor:
 
       - name: EMS Battery State
+
         state: >
 
           {% set soc = states('sensor.battery_soc') | float(0) %}
 
           {% if soc < 20 %}
             critical
-          {% elif soc > 90 %}
+          {% elif soc > 95 %}
             full
           {% else %}
             normal
+          {% endif %}
+```
+
+Opłacalność sprzedaży:
+```yaml
+template:
+
+  - sensor:
+
+      - name: EMS Export Profitability
+
+        state: >
+
+          {% set price = states('input_number.energy_export_price') | float(0) %}
+
+          {% if price > 0.80 %}
+            high
+          {% elif price > 0.40 %}
+            medium
+          {% else %}
+            low
           {% endif %}
 ```
 
@@ -251,32 +280,68 @@ template:
 
         state: >
 
-          {% set price_raw = states('sensor.energy_price') %}
-          {% set price = price_raw | float(0) %}
+          {% set pv = states('sensor.ems_pv_level') %}
           {% set battery = states('sensor.ems_battery_state') %}
-          {% set pv = states('sensor.pv_power') | float(0) %}
+          {% set tariff = states('sensor.energy_tariff') %}
+          {% set export = states('sensor.ems_export_profitability') %}
 
-          {% if price_raw in ['unknown','unavailable','none'] %}
+          {% if battery == 'critical' %}
+            charge
 
-            {% if pv > 3000 %}
-              export
-            {% else %}
-              self_use
-            {% endif %}
+          {% elif pv == 'high' and battery != 'full' %}
+            self_use
+
+          {% elif tariff == 'cheap' and battery != 'full' %}
+            charge
+
+          {% elif export == 'high' and battery != 'critical' %}
+            discharge
+
+          {% elif pv == 'high' and battery == 'full' %}
+            export
 
           {% else %}
-
-            {% if price < 0.30 and battery != 'full' %}
-              charge
-            {% elif price > 0.80 and battery != 'critical' %}
-              discharge
-            {% elif pv > 3000 %}
-              export
-            {% else %}
-              self_use
-            {% endif %}
-
+            self_use
           {% endif %}
+```
+
+EMS System Mode (diagnostyka):
+```yaml
+template:
+
+  - sensor:
+
+      - name: EMS System Mode
+
+        state: >
+
+          {% set s = states('sensor.ems_energy_strategy') %}
+
+          {% if s == 'charge' %}
+            GRID_CHARGE
+          {% elif s == 'discharge' %}
+            BATTERY_EXPORT
+          {% elif s == 'export' %}
+            PV_EXPORT
+          {% else %}
+            SELF_USE
+          {% endif %}
+```
+
+Kontekst decyzji EMS:
+```yaml
+template:
+
+  - sensor:
+
+      - name: EMS Decision Context
+
+        state: >
+
+          PV={{ states('sensor.pv_power') }}
+          SOC={{ states('sensor.battery_soc') }}
+          Tariff={{ states('sensor.energy_tariff') }}
+          ExportPrice={{ states('input_number.energy_export_price') }}
 ```
 
 Mapowanie strategii → tryb FoxESS:
@@ -309,7 +374,6 @@ script:
   foxess_dynamic_time_group_write:
 
     fields:
-
       enable:
       work_mode:
       max_soc:
@@ -329,22 +393,18 @@ script:
           values:
 
             - "{{ enable | default(1) }}"
-
             - "{{ (0 * 256) + 0 }}"
             - "{{ (23 * 256) + 59 }}"
-
             - "{{ work_mode | default(1) }}"
-
             - "{{ max_soc | default(100) }}"
             - "{{ min_soc | default(20) }}"
             - "{{ fd_soc | default(20) }}"
             - "{{ fd_power | default(0) }}"
-
             - 0
             - 0
 ```
 
-Automatyczny kontroler EMS (write-if-changed):
+Kontroler EMS (write-if-changed):
 ```yaml
 automation:
 
