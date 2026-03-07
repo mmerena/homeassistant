@@ -3,19 +3,21 @@ template:
   - sensor:
 
 # ------------------------------------------------
-# PV SURPLUS (PV - LOAD)
+# PV SURPLUS
 # ------------------------------------------------
 
       - name: EMS PV Surplus
         unique_id: ems_pv_surplus
         unit_of_measurement: W
         icon: mdi:solar-power
+
         state: >
 
           {% set pv = states('sensor.pv_power') | float(0) %}
           {% set load = states('sensor.load_power') | float(0) %}
 
           {{ (pv - load) | round(0) }}
+
 
 # ------------------------------------------------
 # PV SURPLUS LEVEL
@@ -24,21 +26,23 @@ template:
       - name: EMS PV Surplus Level
         unique_id: ems_pv_surplus_level
         icon: mdi:solar-power-variant
+
         state: >
 
-          {% set s = states('sensor.ems_pv_surplus') | float(0) %}
+          {% set surplus = states('sensor.ems_pv_surplus') | float(0) %}
 
-          {% if s > 4000 %}
+          {% if surplus > 4000 %}
             very_high
-          {% elif s > 2000 %}
+          {% elif surplus > 2000 %}
             high
-          {% elif s > 800 %}
+          {% elif surplus > 500 %}
             medium
-          {% elif s > 200 %}
+          {% elif surplus > 100 %}
             low
           {% else %}
             none
           {% endif %}
+
 
 # ------------------------------------------------
 # BATTERY STATE
@@ -47,19 +51,21 @@ template:
       - name: EMS Battery State
         unique_id: ems_battery_state
         icon: mdi:battery
+
         state: >
 
           {% set soc = states('sensor.battery_soc') | float(0) %}
 
           {% if soc < 15 %}
             critical
-          {% elif soc < 30 %}
+          {% elif soc < 40 %}
             low
-          {% elif soc > 95 %}
-            full
-          {% else %}
+          {% elif soc < 80 %}
             normal
+          {% else %}
+            full
           {% endif %}
+
 
 # ------------------------------------------------
 # GRID STATE
@@ -68,20 +74,22 @@ template:
       - name: EMS Grid State
         unique_id: ems_grid_state
         icon: mdi:transmission-tower
+
         state: >
 
-          {% set g = states('sensor.grid_power') | float(0) %}
+          {% set grid = states('sensor.grid_power') | float(0) %}
 
-          {% if g > 300 %}
-            export
-          {% elif g < -300 %}
+          {% if grid > 200 %}
             import
+          {% elif grid < -200 %}
+            export
           {% else %}
             neutral
           {% endif %}
 
+
 # ------------------------------------------------
-# POWER BALANCE (diagnostic)
+# POWER BALANCE
 # ------------------------------------------------
 
       - name: EMS Power Balance
