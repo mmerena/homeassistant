@@ -1,0 +1,119 @@
+template:
+
+  - sensor:
+
+# ------------------------------------------------
+# EMS SENSOR HEALTH
+# ------------------------------------------------
+
+      - name: EMS Sensor Health
+        unique_id: ems_sensor_health
+        icon: mdi:heart-pulse
+
+        state: >
+
+          {% set pv = states('sensor.pv_power') %}
+          {% set load = states('sensor.load_power') %}
+          {% set soc = states('sensor.battery_soc') %}
+          {% set grid = states('sensor.grid_power') %}
+
+          {% if pv in ['unknown','unavailable']
+                or load in ['unknown','unavailable']
+                or soc in ['unknown','unavailable']
+                or grid in ['unknown','unavailable'] %}
+            error
+          {% else %}
+            ok
+          {% endif %}
+
+
+# ------------------------------------------------
+# EMS ENERGY BALANCE CHECK
+# ------------------------------------------------
+
+      - name: EMS Energy Balance Check
+        unique_id: ems_energy_balance_check
+        icon: mdi:scale-balance
+
+        state: >
+
+          {% set pv = states('sensor.pv_power') | float(0) %}
+          {% set load = states('sensor.load_power') | float(0) %}
+          {% set grid = states('sensor.grid_power') | float(0) %}
+          {% set battery = states('sensor.battery_power') | float(0) %}
+
+          {% set balance = pv + grid + battery - load %}
+
+          {% if balance | abs > 500 %}
+            warning
+          {% else %}
+            ok
+          {% endif %}
+
+
+# ------------------------------------------------
+# EMS STRATEGY STABILITY CHECK
+# ------------------------------------------------
+
+      - name: EMS Strategy Stability
+        unique_id: ems_strategy_stability
+        icon: mdi:chart-timeline-variant
+
+        state: >
+
+          {% set stability = states('sensor.ems_strategy_stability_score') | float(0) %}
+
+          {% if stability < 2 %}
+            unstable
+          {% else %}
+            stable
+          {% endif %}
+
+
+# ------------------------------------------------
+# EMS PROFITABILITY STATUS
+# ------------------------------------------------
+
+      - name: EMS Profitability Status
+        unique_id: ems_profitability_status
+        icon: mdi:finance
+
+        state: >
+
+          {% set profit = states('sensor.ems_profit_decision') %}
+
+          {% if profit == 'sell' %}
+            profitable
+          {% else %}
+            neutral
+          {% endif %}
+
+
+# ------------------------------------------------
+# EMS SYSTEM HEALTH
+# ------------------------------------------------
+
+      - name: EMS System Health
+        unique_id: ems_system_health
+        icon: mdi:shield-check
+
+        state: >
+
+          {% set sensors = states('sensor.ems_sensor_health') %}
+          {% set balance = states('sensor.ems_energy_balance_check') %}
+          {% set stability = states('sensor.ems_strategy_stability') %}
+
+          {% if sensors == 'ok'
+                and balance == 'ok'
+                and stability == 'stable' %}
+            healthy
+
+          {% elif sensors == 'error' %}
+            sensor_error
+
+          {% elif balance == 'warning' %}
+            energy_mismatch
+
+          {% else %}
+            degraded
+          {% endif %}
