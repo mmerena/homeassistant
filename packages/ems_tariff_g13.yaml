@@ -1,0 +1,37 @@
+template:
+
+  - sensor:
+
+# ------------------------------------------------
+# ENERGY TARIFF G13
+# ------------------------------------------------
+
+      - name: Energy Tariff G13
+        unique_id: energy_tariff_g13
+        icon: mdi:calendar-clock
+
+        state: >
+
+          {% set h = now().hour %}
+          {% set d = now().weekday() %}
+
+# --- WEEKEND ------------------------------------
+
+          {% if d >= 5 %}
+            cheap
+
+# --- PEAK ---------------------------------------
+
+          {% elif 16 <= h < 21 %}
+            peak
+
+# --- NORMAL -------------------------------------
+
+          {% elif 7 <= h < 13 %}
+            normal
+
+# --- CHEAP --------------------------------------
+
+          {% else %}
+            cheap
+          {% endif %}
