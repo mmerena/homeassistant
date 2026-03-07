@@ -1,0 +1,72 @@
+template:
+
+  - sensor:
+
+# ------------------------------------------------
+# PV FORECAST ENERGY TODAY
+# ------------------------------------------------
+
+      - name: EMS PV Forecast Energy Today
+        unique_id: ems_pv_forecast_today
+        unit_of_measurement: kWh
+        icon: mdi:solar-power
+
+        state: >
+          {{ states('input_number.pv_forecast_today') | float(0) }}
+
+
+# ------------------------------------------------
+# EXPECTED LOAD TODAY
+# ------------------------------------------------
+
+      - name: EMS Load Forecast Today
+        unique_id: ems_load_forecast_today
+        unit_of_measurement: kWh
+        icon: mdi:home-lightning-bolt
+
+        state: >
+          {{ states('input_number.load_forecast_today') | float(0) }}
+
+
+# ------------------------------------------------
+# ENERGY BALANCE FORECAST
+# ------------------------------------------------
+
+      - name: EMS Energy Balance Forecast
+        unique_id: ems_energy_balance_forecast
+        unit_of_measurement: kWh
+        icon: mdi:chart-bar
+
+        state: >
+
+          {% set pv = states('sensor.ems_pv_forecast_energy_today') | float(0) %}
+          {% set load = states('sensor.ems_load_forecast_today') | float(0) %}
+
+          {{ (pv - load) | round(2) }}
+
+
+# ------------------------------------------------
+# TARGET BATTERY SOC
+# ------------------------------------------------
+
+      - name: EMS Target Battery SOC
+        unique_id: ems_target_battery_soc
+        unit_of_measurement: "%"
+        icon: mdi:battery-clock
+
+        state: >
+
+          {% set balance = states('sensor.ems_energy_balance_forecast') | float(0) %}
+
+          {% if balance > 10 %}
+            100
+
+          {% elif balance > 5 %}
+            90
+
+          {% elif balance > 0 %}
+            75
+
+          {% else %}
+            50
+          {% endif %}
