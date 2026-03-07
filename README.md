@@ -1,6 +1,22 @@
 # homeassistant
 EMS (Energy Management System) / Dynamic Time Group (48010–48019).
 
+Architektura:
+```text
+FOXESS MODBUS
+      ↓
+REGISTER PARSER
+      ↓
+EMS ANALYTICS
+(PV / SOC / Tariff / Export Price)
+      ↓
+EMS STRATEGY
+      ↓
+SAFETY CONTROL
+      ↓
+FOXESS CONTROLLER
+```
+
 Mapowanie rejestrów:
 ```text
 | idx | rejestr | nazwa         | typ | opis                                                                                        |
@@ -26,22 +42,17 @@ sensor.battery_soc
 sensor.battery_power
 ```
 
-Modbus RAW – Dynamic Time Group:
+Modbus – Dynamic Time Group:
 ```yaml
 modbus:
   - name: foxess_modbus
     type: tcp
     host: 192.168.1.100
     port: 502
-    timeout: 5
-    retries: 3
-    delay: 0
-    message_wait_milliseconds: 30
 
     sensors:
 
       - name: FoxESS Dynamic Time Group Raw
-        unique_id: foxess_dynamic_time_group_raw
         slave: 247
         address: 48010
         input_type: holding
@@ -51,7 +62,7 @@ modbus:
         scan_interval: 60
 ```
 
-Parser rejestrów FoxESS:
+Parser FoxESS:
 ```yaml
 template:
 
@@ -62,7 +73,6 @@ template:
     sensor:
 
       - name: FoxESS Dynamic Time Group Parsed
-        unique_id: foxess_dynamic_time_group_parsed
 
         state: >
           {% set r = state_attr('sensor.foxess_dynamic_time_group_raw','registers') %}
@@ -70,41 +80,25 @@ template:
 
         attributes:
 
-          start_hour: >
-            {% set r = state_attr('sensor.foxess_dynamic_time_group_raw','registers') %}
-            {{ (r[1] // 256) if r is not none else none }}
-
-          start_min: >
-            {% set r = state_attr('sensor.foxess_dynamic_time_group_raw','registers') %}
-            {{ (r[1] % 256) if r is not none else none }}
-
-          end_hour: >
-            {% set r = state_attr('sensor.foxess_dynamic_time_group_raw','registers') %}
-            {{ (r[2] // 256) if r is not none else none }}
-
-          end_min: >
-            {% set r = state_attr('sensor.foxess_dynamic_time_group_raw','registers') %}
-            {{ (r[2] % 256) if r is not none else none }}
-
           work_mode: >
             {% set r = state_attr('sensor.foxess_dynamic_time_group_raw','registers') %}
-            {{ r[3] if r is not none else none }}
+            {{ r[3] if r is not none and r|length > 3 else none }}
 
           max_soc: >
             {% set r = state_attr('sensor.foxess_dynamic_time_group_raw','registers') %}
-            {{ r[4] if r is not none else none }}
+            {{ r[4] if r is not none and r|length > 4 else none }}
 
           min_soc: >
             {% set r = state_attr('sensor.foxess_dynamic_time_group_raw','registers') %}
-            {{ r[5] if r is not none else none }}
+            {{ r[5] if r is not none and r|length > 5 else none }}
 
           fd_soc: >
             {% set r = state_attr('sensor.foxess_dynamic_time_group_raw','registers') %}
-            {{ r[6] if r is not none else none }}
+            {{ r[6] if r is not none and r|length > 6 else none }}
 
           fd_power: >
             {% set r = state_attr('sensor.foxess_dynamic_time_group_raw','registers') %}
-            {{ r[7] if r is not none else none }}
+            {{ r[7] if r is not none and r|length > 7 else none }}
 ```
 
 Sensory diagnostyczne FoxESS:
