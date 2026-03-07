@@ -44,8 +44,12 @@ Mapowanie rejestrów:
 Dekodowanie:
 ```yaml
 template:
-
   - sensor:
+
+      - name: FoxESS Dynamic Time Group Enabled
+        unique_id: foxess_dynamic_time_group_enabled
+        state: >
+          {{ state_attr('sensor.foxess_48010_48019_time_control_raw_block','registers')[0] }}
 
       - name: FoxESS Dynamic Time Group Start Time
         unique_id: foxess_dynamic_time_group_start_time
@@ -62,10 +66,8 @@ template:
           {% set h = (r[2] >> 8) %}
           {% set m = (r[2] & 255) %}
           {{ "%02d:%02d"|format(h,m) }}
-```
 
-Work Mode:
-```yaml
+
       - name: FoxESS Dynamic Time Group Work Mode
         unique_id: foxess_dynamic_time_group_work_mode
         state: >
@@ -81,10 +83,7 @@ Work Mode:
           {% elif v == 7 %}Force Discharge
           {% else %}Unknown
           {% endif %}
-```
 
-SOC i Power:
-```yaml
       - name: FoxESS Dynamic Time Group Max SOC
         unit_of_measurement: "%"
         state: >
@@ -104,6 +103,7 @@ SOC i Power:
         unit_of_measurement: W
         state: >
           {{ state_attr('sensor.foxess_48010_48019_time_control_raw_block','registers')[7] }}
+
 ```
 
 Zapis Dynamic Time Group:
