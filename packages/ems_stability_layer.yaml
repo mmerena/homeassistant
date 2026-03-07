@@ -1,0 +1,69 @@
+template:
+
+  - sensor:
+
+# ------------------------------------------------
+# STRATEGY CHANGE REQUEST
+# ------------------------------------------------
+
+      - name: EMS Strategy Change Request
+        unique_id: ems_strategy_change_request
+        icon: mdi:swap-horizontal
+
+        state: >
+
+          {% set current = states('sensor.ems_energy_strategy') %}
+          {% set optimizer = states('sensor.ems_optimizer_decision') %}
+
+          {% if optimizer == 'sell' %}
+            export
+
+          {% elif optimizer == 'charge' %}
+            charge
+
+          {% elif optimizer == 'arbitrage' %}
+            charge
+
+          {% else %}
+            self_use
+          {% endif %}
+
+
+# ------------------------------------------------
+# STRATEGY HYSTERESIS
+# ------------------------------------------------
+
+      - name: EMS Strategy Hysteresis
+        unique_id: ems_strategy_hysteresis
+        icon: mdi:chart-bell-curve
+
+        state: >
+
+          {% set request = states('sensor.ems_strategy_change_request') %}
+          {% set current = states('sensor.ems_energy_strategy') %}
+
+          {% if request == current %}
+            stable
+
+          {% else %}
+            change_requested
+          {% endif %}
+
+
+# ------------------------------------------------
+# STRATEGY STABILITY SCORE
+# ------------------------------------------------
+
+      - name: EMS Strategy Stability Score
+        unique_id: ems_strategy_stability_score
+        icon: mdi:scale-balance
+
+        state: >
+
+          {% set hysteresis = states('sensor.ems_strategy_hysteresis') %}
+
+          {% if hysteresis == 'stable' %}
+            3
+          {% else %}
+            1
+          {% endif %}
