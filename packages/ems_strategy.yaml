@@ -3,7 +3,7 @@ template:
   - sensor:
 
 # ------------------------------------------------
-# EMS ENERGY STRATEGY
+# EMS STRATEGY ENGINE V2
 # ------------------------------------------------
 
       - name: EMS Energy Strategy
@@ -16,35 +16,47 @@ template:
           {% set surplus = states('sensor.ems_pv_surplus_level') %}
           {% set battery = states('sensor.ems_battery_state') %}
           {% set tariff = states('sensor.energy_tariff_g13') %}
-          {% set export_price = states('sensor.ems_export_price_level') %}
+          {% set profit = states('sensor.ems_profit_decision') %}
           {% set soc = states('sensor.battery_soc') | float(0) %}
 
-# --- BATTERY PROTECTION --------------------------
+# ------------------------------------------------
+# PRIORITY 1 — BATTERY PROTECTION
+# ------------------------------------------------
 
-          {% if battery == 'critical' %}
+          {% if battery == 'critical' or soc < 15 %}
             charge
 
-# --- CHEAP GRID ENERGY ---------------------------
+# ------------------------------------------------
+# PRIORITY 2 — SELL ENERGY IF PROFITABLE
+# ------------------------------------------------
+
+          {% elif profit == 'sell' and battery != 'critical' %}
+            export
+
+# ------------------------------------------------
+# PRIORITY 3 — CHEAP GRID ENERGY
+# ------------------------------------------------
 
           {% elif tariff == 'cheap' and soc < 90 %}
             charge
 
-# --- EXPORT WHEN PRICE HIGH ----------------------
-
-          {% elif export_price in ['very_high','high'] and battery != 'critical' %}
-            export
-
-# --- PV SURPLUS ----------------------------------
+# ------------------------------------------------
+# PRIORITY 4 — PV SURPLUS CHARGING
+# ------------------------------------------------
 
           {% elif surplus in ['very_high','high','medium'] and battery != 'full' %}
             self_use
 
-# --- PV EXPORT -----------------------------------
+# ------------------------------------------------
+# PRIORITY 5 — PV EXPORT
+# ------------------------------------------------
 
           {% elif energy_state == 'pv_export' %}
             export
 
-# --- DEFAULT -------------------------------------
+# ------------------------------------------------
+# DEFAULT
+# ------------------------------------------------
 
           {% else %}
             self_use
