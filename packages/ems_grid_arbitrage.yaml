@@ -30,7 +30,7 @@ template:
         state: >
 
           {% set margin = states('sensor.ems_arbitrage_margin') | float(0) %}
-          {% set threshold = states('input_number.arbitrage_threshold') | float(0.20) %}
+          {% set threshold = states('input_number.arbitrage_threshold') | float(0.25) %}
 
           {% if margin > threshold %}
             profitable
@@ -52,7 +52,7 @@ template:
           {% set opportunity = states('sensor.ems_arbitrage_opportunity') %}
           {% set soc = states('sensor.battery_soc') | float(0) %}
 
-          {% if opportunity == 'profitable' and soc < 90 %}
+          {% if opportunity == 'profitable' and soc < 85 %}
             charge
 
           {% elif opportunity == 'profitable' and soc > 60 %}
