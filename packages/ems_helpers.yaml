@@ -1,63 +1,52 @@
 input_number:
 
-# ------------------------------------------------
-# MIN BATTERY SOC
-# ------------------------------------------------
-
   foxess_ems_min_soc:
     name: FoxESS EMS Min SOC
-    icon: mdi:battery-low
     min: 5
     max: 50
     step: 1
     unit_of_measurement: "%"
-    mode: slider
     initial: 20
-
-
-# ------------------------------------------------
-# FORCE DISCHARGE SOC
-# ------------------------------------------------
 
   foxess_ems_fd_soc:
     name: FoxESS EMS Force Discharge SOC
-    icon: mdi:battery-arrow-down
     min: 5
     max: 50
     step: 1
     unit_of_measurement: "%"
-    mode: slider
     initial: 20
-
-
-# ------------------------------------------------
-# FORCE DISCHARGE POWER
-# ------------------------------------------------
 
   foxess_ems_fd_power:
     name: FoxESS EMS Force Discharge Power
-    icon: mdi:flash
     min: 0
     max: 10000
     step: 100
     unit_of_measurement: W
-    mode: slider
     initial: 0
-
-
-# ------------------------------------------------
-# EXPORT ENERGY PRICE
-# ------------------------------------------------
 
   energy_export_price:
     name: Energy Export Price
-    icon: mdi:cash
     min: 0
     max: 2
     step: 0.01
     unit_of_measurement: PLN/kWh
-    mode: box
     initial: 0.40
+
+  arbitrage_threshold:
+    name: Arbitrage Threshold
+    min: 0
+    max: 1
+    step: 0.01
+    unit_of_measurement: PLN/kWh
+    initial: 0.25
+
+  battery_capacity_kwh:
+    name: Battery Capacity
+    min: 1
+    max: 50
+    step: 0.5
+    unit_of_measurement: kWh
+    initial: 10
 
   pv_forecast_today:
     name: PV Forecast Today
@@ -65,9 +54,7 @@ input_number:
     max: 100
     step: 0.1
     unit_of_measurement: kWh
-    mode: box
     initial: 10
-
 
   load_forecast_today:
     name: Load Forecast Today
@@ -75,28 +62,33 @@ input_number:
     max: 100
     step: 0.1
     unit_of_measurement: kWh
-    mode: box
     initial: 12
 
 
 input_text:
 
-# ------------------------------------------------
-# SIGNATURE FOR WRITE-IF-CHANGED
-# ------------------------------------------------
-
   foxess_last_signature:
     name: FoxESS Last Signature
-    max: 50
 
 
 input_datetime:
-
-# ------------------------------------------------
-# LAST MODE CHANGE TIME
-# ------------------------------------------------
 
   ems_last_mode_change:
     name: EMS Last Mode Change
     has_date: true
     has_time: true
+
+
+input_select:
+
+  ems_control_mode:
+    name: EMS Control Mode
+    options:
+
+      - auto
+      - force_charge
+      - force_discharge
+      - force_export
+      - maintenance
+
+    initial: auto
