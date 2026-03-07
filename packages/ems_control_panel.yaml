@@ -2,7 +2,25 @@ template:
 
   - sensor:
 
+# ------------------------------------------------
+# EMS CONTROL ACTIVE MODE
+# ------------------------------------------------
+
+      - name: EMS Control Active Mode
+        unique_id: ems_control_active_mode
+        icon: mdi:remote
+
+        state: >
+          {{ states('input_select.ems_control_mode') }}
+
+
+# ------------------------------------------------
+# EMS OVERRIDE STRATEGY
+# ------------------------------------------------
+
       - name: EMS Override Strategy
+        unique_id: ems_override_strategy
+        icon: mdi:toggle-switch
 
         state: >
 
@@ -10,12 +28,16 @@ template:
 
           {% if mode == 'force_charge' %}
             charge
+
           {% elif mode == 'force_discharge' %}
             discharge
+
           {% elif mode == 'force_export' %}
             export
+
           {% elif mode == 'maintenance' %}
             idle
+
           {% else %}
             auto
           {% endif %}
