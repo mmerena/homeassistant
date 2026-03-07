@@ -1,5 +1,5 @@
 
-# FoxESS EMS for Home Assistant (README v2)
+# FoxESS EMS for Home Assistant
 
 ## Overview
 
