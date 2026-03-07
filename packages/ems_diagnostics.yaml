@@ -52,7 +52,7 @@ template:
 
 
 # ------------------------------------------------
-# EMS STRATEGY STABILITY CHECK
+# EMS STRATEGY STABILITY
 # ------------------------------------------------
 
       - name: EMS Strategy Stability
