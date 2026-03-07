@@ -1,0 +1,51 @@
+template:
+
+  - sensor:
+
+##################################################
+# EXPORT VALUE
+##################################################
+
+      - name: EMS Export Value
+        unique_id: ems_export_value
+        unit_of_measurement: PLN
+        icon: mdi:cash
+
+        state: >
+
+          {% set power = states('sensor.ems_pv_to_grid') | float(0) %}
+          {% set price = states('sensor.ems_export_price') | float(0) %}
+
+          {{ (power / 1000 * price) | round(3) }}
+
+##################################################
+# IMPORT COST
+##################################################
+
+      - name: EMS Import Cost
+        unique_id: ems_import_cost
+        unit_of_measurement: PLN
+        icon: mdi:cash-minus
+
+        state: >
+
+          {% set power = states('sensor.ems_grid_to_load') | float(0) %}
+          {% set price = states('sensor.ems_import_price') | float(0) %}
+
+          {{ (power / 1000 * price) | round(3) }}
+
+##################################################
+# EMS NET PROFIT
+##################################################
+
+      - name: EMS Net Profit
+        unique_id: ems_net_profit
+        unit_of_measurement: PLN
+        icon: mdi:chart-line
+
+        state: >
+
+          {% set export = states('sensor.ems_export_value') | float(0) %}
+          {% set import = states('sensor.ems_import_cost') | float(0) %}
+
+          {{ (export - import) | round(3) }}
