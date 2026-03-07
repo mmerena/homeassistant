@@ -1,461 +1,209 @@
-# homeassistant
-EMS (Energy Management System) / Dynamic Time Group (48010–48019).
-
-Architektura:
-```text
-FOXESS MODBUS
-      ↓
-REGISTER PARSER
-      ↓
-EMS ANALYTICS
-(PV / SOC / Tariff / Export Price)
-      ↓
-EMS STRATEGY
-      ↓
-SAFETY CONTROL
-      ↓
-FOXESS CONTROLLER
-```
-
-Mapowanie rejestrów:
-```text
-| idx | rejestr | nazwa         | typ | opis                                                                                        |
-| --- | ------- | ------------- | --- | ------------------------------------------------------------------------------------------- |
-| 0   | 48010   | Enable        | U16 | 0 disable / 1 enable                                                                        |
-| 1   | 48011   | Start Time    | U16 | High byte = hour, Low byte = minute                                                         |
-| 2   | 48012   | End Time      | U16 | High byte = hour, Low byte = minute                                                         |
-| 3   | 48013   | Work Mode     | U16 | 1 Self-Use, 2 Feed-In, [ 3 Backup, 4 Peak Shaving, 5 Power Station ], 6 Charge, 7 Discharge |
-| 4   | 48014   | MaxSoC        | U8  | 10-100%                                                                                     |
-| 5   | 48015   | MinSoC OnGrid | U8  | 10-100%                                                                                     |
-| 6   | 48016   | FDSOC         | U16 | SOC dla Force Discharge                                                                     |
-| 7   | 48017   | FDPWR         | U16 | moc W                                                                                       |
-| 8   | 48018   | reserved      | U16 | —                                                                                           |
-| 9   | 48019   | reserved      | U16 | —                                                                                           |
-```
-
-Sensory wejściowe EMS:
-```text
-sensor.energy_price
-sensor.pv_power
-sensor.grid_power
-sensor.battery_soc
-sensor.battery_power
-```
-
-Modbus – Dynamic Time Group:
-```yaml
-modbus:
-  - name: foxess_modbus
-    type: tcp
-    host: 192.168.1.100
-    port: 502
-
-    sensors:
-
-      - name: FoxESS Dynamic Time Group Raw
-        slave: 247
-        address: 48010
-        input_type: holding
-        data_type: custom
-        structure: ">10H"
-        count: 10
-        scan_interval: 60
-```
-
-Parser FoxESS:
-```yaml
-template:
-
-  - trigger:
-      - platform: state
-        entity_id: sensor.foxess_dynamic_time_group_raw
-
-    sensor:
-
-      - name: FoxESS Dynamic Time Group Parsed
-
-        state: >
-          {% set r = state_attr('sensor.foxess_dynamic_time_group_raw','registers') %}
-          {{ 'ok' if r is not none and r | length >= 8 else 'unavailable' }}
-
-        attributes:
-
-          work_mode: >
-            {% set r = state_attr('sensor.foxess_dynamic_time_group_raw','registers') %}
-            {{ r[3] if r is not none and r|length > 3 else none }}
-
-          max_soc: >
-            {% set r = state_attr('sensor.foxess_dynamic_time_group_raw','registers') %}
-            {{ r[4] if r is not none and r|length > 4 else none }}
-
-          min_soc: >
-            {% set r = state_attr('sensor.foxess_dynamic_time_group_raw','registers') %}
-            {{ r[5] if r is not none and r|length > 5 else none }}
-
-          fd_soc: >
-            {% set r = state_attr('sensor.foxess_dynamic_time_group_raw','registers') %}
-            {{ r[6] if r is not none and r|length > 6 else none }}
-
-          fd_power: >
-            {% set r = state_attr('sensor.foxess_dynamic_time_group_raw','registers') %}
-            {{ r[7] if r is not none and r|length > 7 else none }}
-```
-
-Sensory diagnostyczne FoxESS:
-```yaml
-template:
-
-  - sensor:
-
-      - name: FoxESS Work Mode
-        state: >
-          {{ state_attr('sensor.foxess_dynamic_time_group_parsed','work_mode') }}
-
-      - name: FoxESS Max SOC
-        unit_of_measurement: "%"
-        state: >
-          {{ state_attr('sensor.foxess_dynamic_time_group_parsed','max_soc') }}
-
-      - name: FoxESS Min SOC
-        unit_of_measurement: "%"
-        state: >
-          {{ state_attr('sensor.foxess_dynamic_time_group_parsed','min_soc') }}
-
-      - name: FoxESS FD SOC
-        unit_of_measurement: "%"
-        state: >
-          {{ state_attr('sensor.foxess_dynamic_time_group_parsed','fd_soc') }}
-
-      - name: FoxESS FD Power
-        unit_of_measurement: W
-        state: >
-          {{ state_attr('sensor.foxess_dynamic_time_group_parsed','fd_power') }}
-```
-
-Parametry EMS:
-```yaml
-input_number:
-
-  energy_export_price:
-    name: Energy Export Price
-    min: 0
-    max: 2
-    step: 0.01
-    unit_of_measurement: PLN/kWh
-
-  foxess_ems_max_soc:
-    name: EMS Max SOC
-    min: 10
-    max: 100
-    step: 1
-
-  foxess_ems_min_soc:
-    name: EMS Min SOC
-    min: 10
-    max: 100
-    step: 1
-
-  foxess_ems_fd_soc:
-    name: EMS Force Discharge SOC
-    min: 10
-    max: 100
-    step: 1
-
-  foxess_ems_fd_power:
-    name: EMS Discharge Power
-    min: 0
-    max: 10000
-    step: 100
-```
-
-Helper write-if-changed:
-```yaml
-input_text:
-
-  foxess_last_write_signature:
-    name: FoxESS Last Write Signature
-    max: 255
-```
-
-Taryfa G13:
-```yaml
-template:
-
-  - sensor:
+# FoxESS EMS for Home Assistant
 
-      - name: Energy Tariff
-
-        state: >
+Profesjonalny **Energy Management System (EMS)** dla falowników
+**FoxESS** oparty o **Home Assistant + Modbus TCP**.
 
-          {% set h = now().hour %}
-          {% set d = now().weekday() %}
+System zarządza:
 
-          {% if d >= 5 %}
-            cheap
-          {% elif h < 6 %}
-            cheap
-          {% elif h >= 16 and h < 22 %}
-            peak
-          {% else %}
-            normal
-          {% endif %}
-```
+-   produkcją PV
+-   magazynem energii
+-   zakupem energii z sieci (taryfa G13)
+-   sprzedażą energii
+-   trybem pracy falownika
 
-Analiza PV:
-```yaml
-template:
+Architektura jest **modułowa**, dzięki czemu system można łatwo
+rozwijać.
 
-  - sensor:
+------------------------------------------------------------------------
 
-      - name: EMS PV Level
+# Architektura EMS
 
-        state: >
+    FoxESS Modbus
+          │
+    EMS Sources
+          │
+    EMS Analysis
+          │
+    Energy State Engine
+          │
+    Tariff Engine (G13)
+          │
+    Dynamic Battery SOC
+          │
+    EMS Strategy Engine
+          │
+    FoxESS Controller
 
-          {% set pv = states('sensor.pv_power') | float(0) %}
+------------------------------------------------------------------------
 
-          {% if pv > 4000 %}
-            high
-          {% elif pv > 1500 %}
-            medium
-          {% else %}
-            low
-          {% endif %}
-```
+# Struktura projektu
 
-Ocena baterii:
-```yaml
-template:
+Pliki znajdują się w katalogu:
 
-  - sensor:
+    config/packages/
 
-      - name: EMS Battery State
+## Lista plików
 
-        state: >
+    foxess_modbus.yaml
+    ems_sources.yaml
+    ems_analysis.yaml
+    ems_energy_state.yaml
+    ems_tariff_g13.yaml
+    ems_dynamic_soc.yaml
+    ems_strategy.yaml
+    ems_control.yaml
+    ems_helpers.yaml
 
-          {% set soc = states('sensor.battery_soc') | float(0) %}
+------------------------------------------------------------------------
 
-          {% if soc < 20 %}
-            critical
-          {% elif soc > 95 %}
-            full
-          {% else %}
-            normal
-          {% endif %}
-```
+# FoxESS Modbus
 
-Opłacalność sprzedaży:
-```yaml
-template:
+Komunikacja z falownikiem przez **Modbus TCP**.
 
-  - sensor:
+Odczytywane dane:
 
-      - name: EMS Export Profitability
+  sensor                  opis
+  ----------------------- ----------------
+  foxess_pv_total_power   produkcja PV
+  foxess_grid_power       moc sieci
+  foxess_load_power       zużycie domu
+  foxess_battery_power    moc baterii
+  foxess_battery_soc      poziom baterii
 
-        state: >
+------------------------------------------------------------------------
 
-          {% set price = states('input_number.energy_export_price') | float(0) %}
+# EMS Sources
 
-          {% if price > 0.80 %}
-            high
-          {% elif price > 0.40 %}
-            medium
-          {% else %}
-            low
-          {% endif %}
-```
+Warstwa abstrakcji nad danymi falownika.
 
-Strategia EMS:
-```yaml
-template:
+    sensor.pv_power
+    sensor.load_power
+    sensor.grid_power
+    sensor.battery_power
+    sensor.battery_soc
 
-  - sensor:
+------------------------------------------------------------------------
 
-      - name: EMS Energy Strategy
+# EMS Analysis
 
-        state: >
+Oblicza parametry energetyczne systemu.
 
-          {% set pv = states('sensor.ems_pv_level') %}
-          {% set battery = states('sensor.ems_battery_state') %}
-          {% set tariff = states('sensor.energy_tariff') %}
-          {% set export = states('sensor.ems_export_profitability') %}
+    sensor.ems_pv_surplus
+    sensor.ems_pv_surplus_level
+    sensor.ems_battery_state
+    sensor.ems_grid_state
+    sensor.ems_power_balance
 
-          {% if battery == 'critical' %}
-            charge
+------------------------------------------------------------------------
 
-          {% elif pv == 'high' and battery != 'full' %}
-            self_use
+# Energy State Engine
 
-          {% elif tariff == 'cheap' and battery != 'full' %}
-            charge
+Kluczowy sensor:
 
-          {% elif export == 'high' and battery != 'critical' %}
-            discharge
+    sensor.ems_energy_state
 
-          {% elif pv == 'high' and battery == 'full' %}
-            export
+Możliwe stany:
 
-          {% else %}
-            self_use
-          {% endif %}
-```
+    grid_import
+    pv_charge
+    pv_export
+    battery_support
+    grid_export
+    balanced
 
-EMS System Mode (diagnostyka):
-```yaml
-template:
+------------------------------------------------------------------------
 
-  - sensor:
+# Tariff Engine (G13)
 
-      - name: EMS System Mode
+  czas           taryfa
+  -------------- --------
+  Weekend        cheap
+  00:00--07:00   cheap
+  07:00--13:00   normal
+  13:00--16:00   cheap
+  16:00--21:00   peak
+  21:00--24:00   cheap
 
-        state: >
+Sensor:
 
-          {% set s = states('sensor.ems_energy_strategy') %}
+    sensor.energy_tariff_g13
 
-          {% if s == 'charge' %}
-            GRID_CHARGE
-          {% elif s == 'discharge' %}
-            BATTERY_EXPORT
-          {% elif s == 'export' %}
-            PV_EXPORT
-          {% else %}
-            SELF_USE
-          {% endif %}
-```
+------------------------------------------------------------------------
 
-Kontekst decyzji EMS:
-```yaml
-template:
+# Dynamic Battery SOC
 
-  - sensor:
+  czas     max SOC
+  -------- ---------
+  00--06   90
+  06--10   70
+  10--15   95
+  15--18   100
+  18--23   90
+  23--24   80
 
-      - name: EMS Decision Context
+Sensor:
 
-        state: >
+    sensor.ems_dynamic_max_soc
 
-          PV={{ states('sensor.pv_power') }}
-          SOC={{ states('sensor.battery_soc') }}
-          Tariff={{ states('sensor.energy_tariff') }}
-          ExportPrice={{ states('input_number.energy_export_price') }}
-```
+------------------------------------------------------------------------
 
-Mapowanie strategii → tryb FoxESS:
-```yaml
-template:
+# EMS Strategy Engine
 
-  - sensor:
+Decyzje EMS:
 
-      - name: EMS FoxESS Mode
+    charge
+    self_use
+    export
+    discharge
 
-        state: >
+------------------------------------------------------------------------
 
-          {% set s = states('sensor.ems_energy_strategy') %}
+# FoxESS Controller
 
-          {% if s == 'charge' %}
-            6
-          {% elif s == 'discharge' %}
-            7
-          {% elif s == 'export' %}
-            2
-          {% else %}
-            1
-          {% endif %}
-```
+Zapisywany blok rejestrów:
 
-Skrypt zapisu Dynamic Time Group:
-```yaml
-script:
+    48010–48019
 
-  foxess_dynamic_time_group_write:
+Mechanizmy bezpieczeństwa:
 
-    fields:
-      enable:
-      work_mode:
-      max_soc:
-      min_soc:
-      fd_soc:
-      fd_power:
+-   write-if-changed
+-   debounce 5 minut
 
-    sequence:
+------------------------------------------------------------------------
 
-      - service: modbus.write_registers
-        data:
+# Helpery
 
-          hub: foxess_modbus
-          slave: 247
-          address: 48010
+    input_number.foxess_ems_min_soc
+    input_number.foxess_ems_fd_soc
+    input_number.foxess_ems_fd_power
+    input_text.foxess_last_signature
+    input_datetime.ems_last_mode_change
 
-          values:
+------------------------------------------------------------------------
 
-            - "{{ enable | default(1) }}"
-            - "{{ (0 * 256) + 0 }}"
-            - "{{ (23 * 256) + 59 }}"
-            - "{{ work_mode | default(1) }}"
-            - "{{ max_soc | default(100) }}"
-            - "{{ min_soc | default(20) }}"
-            - "{{ fd_soc | default(20) }}"
-            - "{{ fd_power | default(0) }}"
-            - 0
-            - 0
-```
+# Cechy systemu
 
-Kontroler EMS (write-if-changed):
-```yaml
-automation:
+✔ inteligentne ładowanie baterii\
+✔ wykorzystanie nadwyżek PV\
+✔ obsługa taryfy G13\
+✔ dynamiczne sterowanie SOC\
+✔ stabilne przełączanie trybów falownika\
+✔ minimalizacja zapisów Modbus
 
-  - alias: EMS FoxESS Controller
+------------------------------------------------------------------------
 
-    trigger:
+# Wymagania
 
-      - platform: state
-        entity_id:
-          - sensor.ems_energy_strategy
-          - sensor.ems_foxess_mode
-          - input_number.foxess_ems_max_soc
-          - input_number.foxess_ems_min_soc
-          - input_number.foxess_ems_fd_soc
-          - input_number.foxess_ems_fd_power
+-   Home Assistant
+-   integracja Modbus
+-   falownik FoxESS
+-   dostęp Modbus TCP
 
-    condition:
+------------------------------------------------------------------------
 
-      - condition: template
-        value_template: >
+# Status projektu
 
-          {% set work_mode = states('sensor.ems_foxess_mode') | int(1) %}
-          {% set max_soc = states('input_number.foxess_ems_max_soc') | int(100) %}
-          {% set min_soc = states('input_number.foxess_ems_min_soc') | int(20) %}
-          {% set fd_soc = states('input_number.foxess_ems_fd_soc') | int(20) %}
-          {% set fd_power = states('input_number.foxess_ems_fd_power') | int(0) %}
-
-          {% set signature = work_mode ~ '-' ~ max_soc ~ '-' ~ min_soc ~ '-' ~ fd_soc ~ '-' ~ fd_power %}
-
-          {{ signature != states('input_text.foxess_last_write_signature') }}
-
-    action:
-
-      - variables:
-
-          work_mode: "{{ states('sensor.ems_foxess_mode') | int(1) }}"
-          max_soc: "{{ states('input_number.foxess_ems_max_soc') | int(100) }}"
-          min_soc: "{{ states('input_number.foxess_ems_min_soc') | int(20) }}"
-          fd_soc: "{{ states('input_number.foxess_ems_fd_soc') | int(20) }}"
-          fd_power: "{{ states('input_number.foxess_ems_fd_power') | int(0) }}"
-
-          signature: >
-            {{ work_mode ~ '-' ~ max_soc ~ '-' ~ min_soc ~ '-' ~ fd_soc ~ '-' ~ fd_power }}
-
-      - service: script.foxess_dynamic_time_group_write
-        data:
-
-          enable: 1
-          work_mode: "{{ work_mode }}"
-          max_soc: "{{ max_soc }}"
-          min_soc: "{{ min_soc }}"
-          fd_soc: "{{ fd_soc }}"
-          fd_power: "{{ fd_power }}"
-
-      - service: input_text.set_value
-        data:
-
-          entity_id: input_text.foxess_last_write_signature
-          value: "{{ signature }}"
-```
+    EMS Core: Completed
+    FoxESS Integration: Completed
+    Strategy Engine: Completed
+    Control Layer: Completed
