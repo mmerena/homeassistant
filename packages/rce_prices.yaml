@@ -1,0 +1,81 @@
+template:
+
+  - sensor:
+      - name: rce_current_price
+        unit_of_measurement: PLN/kWh
+        state: >
+          {% set h = now().hour %}
+          {{ state_attr('sensor.rce_prices_today', "h%02d"|format(h)) }}
+
+  - sensor:
+      - name: rce_current_hour_rank
+        state: >
+          {% set ns = namespace(prices=[]) %}
+
+          {% for i in range(24) %}
+            {% set p = state_attr('sensor.rce_prices_today',"h%02d"|format(i)) %}
+            {% if p is not none %}
+              {% set ns.prices = ns.prices + [p | float] %}
+            {% endif %}
+          {% endfor %}
+
+          {% set current = state_attr('sensor.rce_prices_today',"h%02d"|format(now().hour)) | float(0) %}
+
+          {% if current in ns.prices %}
+            {{ (ns.prices | sort).index(current) + 1 }}
+          {% else %}
+            unknown
+          {% endif %}
+
+  - sensor:
+      - name: rce_cheapest_hours_today
+        state: >
+          {% set ns = namespace(data=[]) %}
+          {% for i in range(24) %}
+            {% set h = "h%02d"|format(i) %}
+            {% set p = state_attr('sensor.rce_prices_today', h) %}
+            {% if p is not none %}
+              {% set ns.data = ns.data + [(i, p | float)] %}
+            {% endif %}
+          {% endfor %}
+          {{ (ns.data | sort(attribute=1))[0:3] | map(attribute=0) | join(',') }}
+
+  - sensor:
+      - name: rce_expensive_hours_today
+        state: >
+          {% set ns = namespace(data=[]) %}
+          {% for i in range(24) %}
+            {% set h = "h%02d"|format(i) %}
+            {% set p = state_attr('sensor.rce_prices_today', h) %}
+            {% if p is not none %}
+              {% set ns.data = ns.data + [(i, p | float)] %}
+            {% endif %}
+          {% endfor %}
+          {{ (ns.data | sort(attribute=1, reverse=True))[0:3] | map(attribute=0) | join(',') }}
+
+  - sensor:
+      - name: rce_cheapest_hours_tomorrow
+        state: >
+          {% set ns = namespace(data=[]) %}
+          {% for i in range(24) %}
+            {% set h = "h%02d"|format(i) %}
+            {% set p = state_attr('sensor.rce_prices_tomorrow', h) %}
+            {% if p is not none %}
+              {% set ns.data = ns.data + [(i, p | float)] %}
+            {% endif %}
+          {% endfor %}
+          {{ (ns.data | sort(attribute=1))[0:3] | map(attribute=0) | join(',') }}
+
+  - sensor:
+      - name: rce_expensive_hours_tomorrow
+        state: >
+          {% set ns = namespace(data=[]) %}
+          {% for i in range(24) %}
+            {% set h = "h%02d"|format(i) %}
+            {% set p = state_attr('sensor.rce_prices_tomorrow', h) %}
+            {% if p is not none %}
+              {% set ns.data = ns.data + [(i, p | float)] %}
+            {% endif %}
+          {% endfor %}
+          {{ (ns.data | sort(attribute=1, reverse=True))[0:3] | map(attribute=0) | join(',') }}
+
