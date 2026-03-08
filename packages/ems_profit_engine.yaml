@@ -13,16 +13,20 @@ template:
 
         state: >
 
-          {% set tariff = states('sensor.energy_tariff_g13') %}
-
+          {% set tariff = states('sensor.energy_tariff_supplier') %}
+          
           {% if tariff == 'peak' %}
-            1.20
+
+            {{ states('input_number.tariff_peak_price') | float(1.20) }}
 
           {% elif tariff == 'normal' %}
-            0.80
+
+            {{ states('input_number.tariff_normal_price') | float(0.80) }}
 
           {% else %}
-            0.50
+
+            {{ states('input_number.tariff_cheap_price') | float(0.50) }}
+
           {% endif %}
 
 
