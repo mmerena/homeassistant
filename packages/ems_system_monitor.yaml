@@ -81,7 +81,7 @@ template:
 
 
 # ------------------------------------------------
-# EMS TARIFF
+# EMS TARIFF (nowa nazwa)
 # ------------------------------------------------
 
       - name: EMS Current Tariff
@@ -89,7 +89,7 @@ template:
         icon: mdi:clock
 
         state: >
-          {{ states('sensor.energy_tariff_g13') }}
+          {{ states('sensor.energy_tariff_supplier') }}
 
 
 # ------------------------------------------------
@@ -106,7 +106,7 @@ template:
 
 
 # ------------------------------------------------
-# EMS SUMMARY (ULEPSZONY – pokazuje adaptive!)
+# EMS SUMMARY (z adaptive)
 # ------------------------------------------------
 
       - name: EMS Summary
@@ -117,7 +117,7 @@ template:
 
           {% set strategy = states('sensor.ems_energy_strategy') %}
           {% set optimizer = states('sensor.ems_optimizer_decision') %}
-          {% set tariff = states('sensor.energy_tariff_g13') %}
+          {% set tariff = states('sensor.energy_tariff_supplier') %}
           {% set export = states('sensor.ems_export_price') | float(0) %}
           {% set soc = states('sensor.battery_soc') %}
           {% set adaptive_status = states('sensor.ems_adaptive_forecast_status') %}
