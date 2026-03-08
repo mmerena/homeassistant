@@ -3,7 +3,7 @@ template:
   - sensor:
 
 # ------------------------------------------------
-# PV FORECAST ENERGY TODAY
+# PV FORECAST ENERGY TODAY (TERAZ ADAPTIVE!)
 # ------------------------------------------------
 
       - name: EMS PV Forecast Energy Today
@@ -12,11 +12,11 @@ template:
         icon: mdi:solar-power
 
         state: >
-          {{ states('input_number.pv_forecast_today') | float(0) }}
+          {{ states('sensor.ems_adaptive_pv_forecast') | float(0) }}
 
 
 # ------------------------------------------------
-# LOAD FORECAST TODAY
+# LOAD FORECAST TODAY (TERAZ ADAPTIVE!)
 # ------------------------------------------------
 
       - name: EMS Load Forecast Today
@@ -25,7 +25,7 @@ template:
         icon: mdi:home-lightning-bolt
 
         state: >
-          {{ states('input_number.load_forecast_today') | float(0) }}
+          {{ states('sensor.ems_adaptive_load_forecast') | float(0) }}
 
 
 # ------------------------------------------------
@@ -60,13 +60,10 @@ template:
 
           {% if balance > 10 %}
             100
-
           {% elif balance > 5 %}
             90
-
           {% elif balance > 0 %}
             75
-
           {% else %}
             50
           {% endif %}
