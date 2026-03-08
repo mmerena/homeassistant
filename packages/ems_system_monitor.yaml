@@ -11,7 +11,6 @@ template:
         icon: mdi:power
 
         state: >
-
           {% set strategy = states('sensor.ems_energy_strategy') %}
 
           {% if strategy in ['charge','export','self_use','discharge'] %}
@@ -107,7 +106,7 @@ template:
 
 
 # ------------------------------------------------
-# EMS SUMMARY
+# EMS SUMMARY (ULEPSZONY – pokazuje adaptive!)
 # ------------------------------------------------
 
       - name: EMS Summary
@@ -119,11 +118,15 @@ template:
           {% set strategy = states('sensor.ems_energy_strategy') %}
           {% set optimizer = states('sensor.ems_optimizer_decision') %}
           {% set tariff = states('sensor.energy_tariff_g13') %}
-          {% set export = states('sensor.ems_export_price') %}
+          {% set export = states('sensor.ems_export_price') | float(0) %}
           {% set soc = states('sensor.battery_soc') %}
+          {% set adaptive_status = states('sensor.ems_adaptive_forecast_status') %}
+          {% set pv_adapt = states('sensor.ems_adaptive_pv_forecast') | float(0) %}
 
           {{ strategy
              ~ " | optimizer:" ~ optimizer
              ~ " | tariff:" ~ tariff
              ~ " | export:" ~ export
-             ~ " | soc:" ~ soc }}
+             ~ " | soc:" ~ soc
+             ~ " | adaptive:" ~ adaptive_status
+             ~ " | PV:" ~ pv_adapt ~ "kWh" }}
