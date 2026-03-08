@@ -69,7 +69,7 @@ input_number:
 # ================================================
 
   tariff_normal_start_hour:
-    name: Taryfa Dostawcy - Normal Start (godzina)  # np. midday 13-16
+    name: Taryfa Dostawcy - Normal Start (godzina)
     min: 0
     max: 23
     step: 1
@@ -131,6 +131,11 @@ input_select:
 input_boolean:
 
   tariff_weekend_cheap:
-    name: Taryfa Dostawcy - Weekend zawsze cheap
+    name: Taryfa Dostawcy - Cheap w Weekend'y
+    initial: on
+    icon: mdi:calendar-weekend
+
+  tariff_holiday_cheap:
+    name: Taryfa Dostawcy - Cheap w Święta
     initial: on
     icon: mdi:calendar-weekend
