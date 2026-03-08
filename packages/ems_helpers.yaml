@@ -162,4 +162,4 @@ input_boolean:
   tariff_holiday_cheap:
     name: Taryfa Dostawcy - Cheap w Święta
     initial: on
-    icon: mdi:calendar-weekend
+    icon: mdi:calendar-holiday
