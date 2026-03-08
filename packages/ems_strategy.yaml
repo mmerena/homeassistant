@@ -18,7 +18,7 @@ template:
           {% set planned_soc = states('sensor.ems_planned_battery_soc') | int(30) %}
           {% set surplus = states('sensor.ems_pv_surplus_level') %}
           {% set battery = states('sensor.ems_battery_state') %}
-          {% set tariff = states('sensor.energy_tariff_g13') %}
+          {% set tariff = states('sensor.energy_tariff_supplier') %}
           {% set optimizer = states('sensor.ems_optimizer_decision') %}
           {% set energy_state = states('sensor.ems_energy_state') %}
 
@@ -46,7 +46,7 @@ template:
             {% if battery == 'critical' or current_soc < 15 %}
               charge
 
-# 2. NOWOŚĆ: PEAK G13 – AGRESYWNY DISCHARGE (największa zmiana!)
+# 2. PEAK – AGRESYWNY DISCHARGE
             {% elif tariff == 'peak' and current_soc > 40 %}
               discharge
 
