@@ -14,29 +14,25 @@ template:
 
           {% set hour = now().hour %}
           {% set weekday = now().weekday() %}
+          {% set is_holiday = 0 %}
 
           {% set weekend_cheap = states('input_boolean.tariff_weekend_cheap') == 'on' %}
-
-          {% set normal_start = states('input_number.tariff_normal_start_hour') | int(7) %}
-          {% set normal_end   = states('input_number.tariff_normal_end_hour') | int(13) %}
+          {% set holiday_cheap = states('input_boolean.tariff_holiday_cheap') == 'on' %}
 
           {% set peak_start = states('input_number.tariff_peak_start_hour') | int(16) %}
           {% set peak_end   = states('input_number.tariff_peak_end_hour') | int(21) %}
 
-          {% if weekend_cheap and weekday in [5,6] %}
+          {% set normal_start = states('input_number.tariff_normal_start_hour') | int(7) %}
+          {% set normal_end   = states('input_number.tariff_normal_end_hour') | int(13) %}
+
+          {% if ( weekend_cheap and weekday in [5,6] ) or ( holiday_cheap and is_holiday == 1 ) %}
             cheap
 
-          {% elif hour < normal_start %}
-            cheap
-
-          {% elif hour < normal_end %}
-            normal
-
-          {% elif hour < peak_start %}
-            cheap
-
-          {% elif hour < peak_end %}
+          {% elif hour >= peak_start and hour < peak_end %}
             peak
+
+          {% elif hour >= normal_start and hour < normal_end %}
+            normal
 
           {% else %}
             cheap
