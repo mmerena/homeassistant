@@ -8,7 +8,6 @@ input_number:
     unit_of_measurement: "%"
     initial: 20
 
-
   foxess_ems_fd_soc:
     name: FoxESS EMS Force Discharge SOC
     min: 5
@@ -16,7 +15,6 @@ input_number:
     step: 1
     unit_of_measurement: "%"
     initial: 20
-
 
   foxess_ems_fd_power:
     name: FoxESS EMS Force Discharge Power
@@ -26,7 +24,6 @@ input_number:
     unit_of_measurement: W
     initial: 0
 
-
   energy_export_price:
     name: Energy Export Price
     min: 0
@@ -34,7 +31,6 @@ input_number:
     step: 0.01
     unit_of_measurement: PLN/kWh
     initial: 0.40
-
 
   arbitrage_threshold:
     name: Arbitrage Threshold
@@ -44,7 +40,6 @@ input_number:
     unit_of_measurement: PLN/kWh
     initial: 0.25
 
-
   battery_capacity_kwh:
     name: Battery Capacity
     min: 1
@@ -52,7 +47,6 @@ input_number:
     step: 0.5
     unit_of_measurement: kWh
     initial: 10
-
 
   pv_forecast_today:
     name: PV Forecast Today
@@ -62,7 +56,6 @@ input_number:
     unit_of_measurement: kWh
     initial: 10
 
-
   load_forecast_today:
     name: Load Forecast Today
     min: 0
@@ -71,12 +64,50 @@ input_number:
     unit_of_measurement: kWh
     initial: 12
 
+# ================================================
+# TARYFA DOSTAWCY – KONFIGURACJA (uniwersalna)
+# ================================================
+
+  tariff_peak_start_hour:
+    name: Taryfa Dostawcy - Peak Start (godzina)
+    min: 0
+    max: 23
+    step: 1
+    unit_of_measurement: "h"
+    icon: mdi:clock-start
+    initial: 17
+
+  tariff_peak_end_hour:
+    name: Taryfa Dostawcy - Peak End (godzina)
+    min: 0
+    max: 23
+    step: 1
+    unit_of_measurement: "h"
+    icon: mdi:clock-end
+    initial: 21
+
+  tariff_cheap_night_start_hour:
+    name: Taryfa Dostawcy - Cheap Night Start (godzina)
+    min: 0
+    max: 23
+    step: 1
+    unit_of_measurement: "h"
+    icon: mdi:clock-start
+    initial: 0
+
+  tariff_cheap_night_end_hour:
+    name: Taryfa Dostawcy - Cheap Night End (godzina)
+    min: 0
+    max: 23
+    step: 1
+    unit_of_measurement: "h"
+    icon: mdi:clock-end
+    initial: 7
 
 input_text:
 
   foxess_last_signature:
     name: FoxESS Last Signature
-
 
 input_datetime:
 
@@ -85,17 +116,21 @@ input_datetime:
     has_date: true
     has_time: true
 
-
 input_select:
 
   ems_control_mode:
     name: EMS Control Mode
     options:
-
       - auto
       - force_charge
       - force_discharge
       - force_export
       - maintenance
-
     initial: auto
+
+input_boolean:
+
+  tariff_weekend_cheap:
+    name: Taryfa Dostawcy - Weekend zawsze cheap
+    initial: on
+    icon: mdi:calendar-weekend
