@@ -1,0 +1,38 @@
+template:
+
+  - sensor:
+
+# ------------------------------------------------
+# TARYFA DOSTAWCY (uniwersalna i edytowalna)
+# ------------------------------------------------
+
+      - name: Energy Tariff Supplier
+        unique_id: energy_tariff_supplier
+        icon: mdi:clock
+
+        state: >
+
+          {% set hour = now().hour %}
+          {% set weekday = now().weekday() %}
+          {% set peak_start = states('input_number.tariff_peak_start_hour') | int(17) %}
+          {% set peak_end   = states('input_number.tariff_peak_end_hour') | int(21) %}
+          {% set night_start = states('input_number.tariff_cheap_night_start_hour') | int(0) %}
+          {% set night_end   = states('input_number.tariff_cheap_night_end_hour') | int(7) %}
+          {% set weekend_cheap = states('input_boolean.tariff_weekend_cheap') == 'on' %}
+
+# WEEKEND (jeśli włączone)
+          {% if weekend_cheap and weekday in [5,6] %}
+            cheap
+
+# PEAK HOURS
+          {% elif hour >= peak_start and hour < peak_end %}
+            peak
+
+# CHEAP NIGHT
+          {% elif (hour >= night_start and hour < night_end) or (night_end < night_start and (hour >= night_start or hour < night_end)) %}
+            cheap
+
+# MIDDAY / reszta = normal
+          {% else %}
+            normal
+          {% endif %}
