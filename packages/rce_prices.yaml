@@ -1,81 +1,53 @@
 template:
 
   - sensor:
-      - name: rce_current_price
+      - name: rce_current_quarter_price
         unit_of_measurement: PLN/kWh
         state: >
-          {% set h = now().hour %}
-          {{ state_attr('sensor.rce_prices_today', "h%02d"|format(h)) }}
+          {% set q = state_attr('sensor.rce_prices_today','quarters') | from_json %}
+          {% set minute = (now().minute // 15) * 15 %}
+          {% set key = "%02d:%02d"|format(now().hour, minute) %}
+          {{ q[key] }}
+
+  - sensor:
+      - name: rce_current_hour_price
+        unit_of_measurement: PLN/kWh
+        state: >
+          {% set h = state_attr('sensor.rce_prices_today','hours') | from_json %}
+          {{ h["%02d"|format(now().hour)] }}
 
   - sensor:
       - name: rce_current_hour_rank
         state: >
-          {% set ns = namespace(prices=[]) %}
-
-          {% for i in range(24) %}
-            {% set p = state_attr('sensor.rce_prices_today',"h%02d"|format(i)) %}
-            {% if p is not none %}
-              {% set ns.prices = ns.prices + [p | float] %}
-            {% endif %}
-          {% endfor %}
-
-          {% set current = state_attr('sensor.rce_prices_today',"h%02d"|format(now().hour)) | float(0) %}
-
-          {% if current in ns.prices %}
-            {{ (ns.prices | sort).index(current) + 1 }}
-          {% else %}
-            unknown
-          {% endif %}
+          {% set h = state_attr('sensor.rce_prices_today','hours') | from_json %}
+          {% set values = h.values() | map('float') | list %}
+          {% set current = h["%02d"|format(now().hour)] | float %}
+          {{ (values | select('lt', current) | list | length) + 1 }}
 
   - sensor:
       - name: rce_cheapest_hours_today
         state: >
-          {% set ns = namespace(data=[]) %}
-          {% for i in range(24) %}
-            {% set h = "h%02d"|format(i) %}
-            {% set p = state_attr('sensor.rce_prices_today', h) %}
-            {% if p is not none %}
-              {% set ns.data = ns.data + [(i, p | float)] %}
-            {% endif %}
-          {% endfor %}
-          {{ (ns.data | sort(attribute=1))[0:3] | map(attribute=0) | join(',') }}
+          {% set h = state_attr('sensor.rce_prices_today','hours') | from_json %}
+          {% set sorted = h | dictsort(by='value') %}
+          {{ sorted[0:3] | map(attribute=0) | join(',') }}
 
   - sensor:
       - name: rce_expensive_hours_today
         state: >
-          {% set ns = namespace(data=[]) %}
-          {% for i in range(24) %}
-            {% set h = "h%02d"|format(i) %}
-            {% set p = state_attr('sensor.rce_prices_today', h) %}
-            {% if p is not none %}
-              {% set ns.data = ns.data + [(i, p | float)] %}
-            {% endif %}
-          {% endfor %}
-          {{ (ns.data | sort(attribute=1, reverse=True))[0:3] | map(attribute=0) | join(',') }}
+          {% set h = state_attr('sensor.rce_prices_today','hours') | from_json %}
+          {% set sorted = h | dictsort(by='value', reverse=true) %}
+          {{ sorted[0:3] | map(attribute=0) | join(',') }}
 
   - sensor:
       - name: rce_cheapest_hours_tomorrow
         state: >
-          {% set ns = namespace(data=[]) %}
-          {% for i in range(24) %}
-            {% set h = "h%02d"|format(i) %}
-            {% set p = state_attr('sensor.rce_prices_tomorrow', h) %}
-            {% if p is not none %}
-              {% set ns.data = ns.data + [(i, p | float)] %}
-            {% endif %}
-          {% endfor %}
-          {{ (ns.data | sort(attribute=1))[0:3] | map(attribute=0) | join(',') }}
+          {% set h = state_attr('sensor.rce_prices_tomorrow','hours') | from_json %}
+          {% set sorted = h | dictsort(by='value') %}
+          {{ sorted[0:3] | map(attribute=0) | join(',') }}
 
   - sensor:
       - name: rce_expensive_hours_tomorrow
         state: >
-          {% set ns = namespace(data=[]) %}
-          {% for i in range(24) %}
-            {% set h = "h%02d"|format(i) %}
-            {% set p = state_attr('sensor.rce_prices_tomorrow', h) %}
-            {% if p is not none %}
-              {% set ns.data = ns.data + [(i, p | float)] %}
-            {% endif %}
-          {% endfor %}
-          {{ (ns.data | sort(attribute=1, reverse=True))[0:3] | map(attribute=0) | join(',') }}
-
+          {% set h = state_attr('sensor.rce_prices_tomorrow','hours') | from_json %}
+          {% set sorted = h | dictsort(by='value', reverse=true) %}
+          {{ sorted[0:3] | map(attribute=0) | join(',') }}
