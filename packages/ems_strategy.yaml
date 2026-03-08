@@ -42,35 +42,39 @@ template:
 
           {% else %}
 
-# BATTERY PROTECTION (najwyższy priorytet)
+# 1. BATTERY PROTECTION
             {% if battery == 'critical' or current_soc < 15 %}
               charge
 
-# NOWOŚĆ 1: PROGNOZA – CEL SOC (ładowanie gdy za nisko)
+# 2. NOWOŚĆ: PEAK G13 – AGRESYWNY DISCHARGE (największa zmiana!)
+            {% elif tariff == 'peak' and current_soc > 40 %}
+              discharge
+
+# 3. PROGNOZA – CEL SOC
             {% elif current_soc < target_soc and tariff in ['cheap', 'normal'] %}
               charge
 
-# OPTIMIZER SELL
+# 4. OPTIMIZER SELL
             {% elif optimizer == 'sell' %}
               export
 
-# GRID ARBITRAGE
+# 5. GRID ARBITRAGE
             {% elif optimizer == 'arbitrage' %}
               charge
 
-# CHEAP TARIFF CHARGE
+# 6. CHEAP TARIFF CHARGE
             {% elif tariff == 'cheap' and current_soc < 90 %}
               charge
 
-# NOWOŚĆ 2: PROGNOZA – NADMIAR ENERGII (eksport gdy za dużo)
+# 7. PROGNOZA – NADMIAR
             {% elif current_soc > (planned_soc + 20) and surplus in ['very_high', 'high'] %}
               export
 
-# PV SURPLUS
+# 8. PV SURPLUS
             {% elif surplus in ['very_high','high','medium'] and battery != 'full' %}
               self_use
 
-# PV EXPORT
+# 9. PV EXPORT
             {% elif energy_state == 'pv_export' %}
               export
 
@@ -96,13 +100,10 @@ template:
 
           {% if strategy == 'charge' %}
             6
-
           {% elif strategy == 'discharge' %}
             7
-
           {% elif strategy == 'export' %}
             2
-
           {% else %}
             1
           {% endif %}
