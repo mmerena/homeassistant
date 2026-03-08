@@ -11,7 +11,6 @@ template:
         icon: mdi:heart-pulse
 
         state: >
-
           {% set pv = states('sensor.pv_power') %}
           {% set load = states('sensor.load_power') %}
           {% set soc = states('sensor.battery_soc') %}
@@ -36,7 +35,6 @@ template:
         icon: mdi:scale-balance
 
         state: >
-
           {% set pv = states('sensor.pv_power') | float(0) %}
           {% set load = states('sensor.load_power') | float(0) %}
           {% set grid = states('sensor.grid_power') | float(0) %}
@@ -60,7 +58,6 @@ template:
         icon: mdi:chart-timeline-variant
 
         state: >
-
           {% set stability = states('sensor.ems_strategy_stability_score') | float(0) %}
 
           {% if stability < 2 %}
@@ -79,7 +76,6 @@ template:
         icon: mdi:finance
 
         state: >
-
           {% set profit = states('sensor.ems_profit_decision') %}
 
           {% if profit == 'sell' %}
@@ -90,7 +86,29 @@ template:
 
 
 # ------------------------------------------------
-# EMS SYSTEM HEALTH
+# NOWOŚĆ: ADAPTIVE FORECAST STATUS
+# ------------------------------------------------
+
+      - name: EMS Adaptive Forecast Status
+        unique_id: ems_adaptive_forecast_status
+        icon: mdi:chart-line-variant
+
+        state: >
+          {% set adaptive_pv = states('sensor.ems_adaptive_pv_forecast') | float(0) %}
+          {% set manual_pv = states('input_number.pv_forecast_today') | float(0) %}
+          {% set diff = ((adaptive_pv - manual_pv) / manual_pv * 100) if manual_pv > 0 else 0 %}
+
+          {% if diff > 20 or diff < -20 %}
+            learning
+          {% elif adaptive_pv > 0 %}
+            stable
+          {% else %}
+            not_ready
+          {% endif %}
+
+
+# ------------------------------------------------
+# EMS SYSTEM HEALTH (ulepszone)
 # ------------------------------------------------
 
       - name: EMS System Health
@@ -98,14 +116,15 @@ template:
         icon: mdi:shield-check
 
         state: >
-
           {% set sensors = states('sensor.ems_sensor_health') %}
           {% set balance = states('sensor.ems_energy_balance_check') %}
           {% set stability = states('sensor.ems_strategy_stability') %}
+          {% set adaptive = states('sensor.ems_adaptive_forecast_status') %}
 
           {% if sensors == 'ok'
                 and balance == 'ok'
-                and stability == 'stable' %}
+                and stability == 'stable'
+                and adaptive in ['stable','learning'] %}
             healthy
 
           {% elif sensors == 'error' %}
