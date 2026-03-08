@@ -65,7 +65,7 @@ input_number:
     initial: 12
 
 # ================================================
-# TARYFA DOSTAWCY – KONFIGURACJA (uniwersalna)
+# TARYFA DOSTAWCY – KONFIGURACJA (teraz z 3 strefami)
 # ================================================
 
   tariff_peak_start_hour:
@@ -103,6 +103,24 @@ input_number:
     unit_of_measurement: "h"
     icon: mdi:clock-end
     initial: 7
+
+  tariff_cheap_day_start_hour:
+    name: Taryfa Dostawcy - Cheap Day Start (godzina)  # np. midday 13-16
+    min: 0
+    max: 23
+    step: 1
+    unit_of_measurement: "h"
+    icon: mdi:clock-start
+    initial: 13
+
+  tariff_cheap_day_end_hour:
+    name: Taryfa Dostawcy - Cheap Day End (godzina)
+    min: 0
+    max: 23
+    step: 1
+    unit_of_measurement: "h"
+    icon: mdi:clock-end
+    initial: 16
 
 input_text:
 
