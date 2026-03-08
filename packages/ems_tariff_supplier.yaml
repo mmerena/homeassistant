@@ -15,34 +15,29 @@ template:
           {% set hour = now().hour %}
           {% set weekday = now().weekday() %}
 
-          {% set peak_start = states('input_number.tariff_peak_start_hour') | int(17) %}
-          {% set peak_end   = states('input_number.tariff_peak_end_hour') | int(21) %}
-
-          {% set night_start = states('input_number.tariff_cheap_night_start_hour') | int(0) %}
-          {% set night_end   = states('input_number.tariff_cheap_night_end_hour') | int(7) %}
-
-          {% set day_start = states('input_number.tariff_cheap_day_start_hour') | int(13) %}
-          {% set day_end   = states('input_number.tariff_cheap_day_end_hour') | int(16) %}
-
           {% set weekend_cheap = states('input_boolean.tariff_weekend_cheap') == 'on' %}
 
-# WEEKEND (jeśli włączone)
+          {% set normal_start = states('input_number.tariff_normal_start_hour') | int(7) %}
+          {% set normal_end   = states('input_number.tariff_normal_end_hour') | int(13) %}
+
+          {% set peak_start = states('input_number.tariff_peak_start_hour') | int(16) %}
+          {% set peak_end   = states('input_number.tariff_peak_end_hour') | int(21) %}
+
           {% if weekend_cheap and weekday in [5,6] %}
             cheap
 
-# PEAK
-          {% elif hour >= peak_start and hour < peak_end %}
+          {% elif hour < normal_start %}
+            cheap
+
+          {% elif hour < normal_end %}
+            normal
+
+          {% elif hour < peak_start %}
+            cheap
+
+          {% elif hour < peak_end %}
             peak
 
-# CHEAP NIGHT
-          {% elif (hour >= night_start and hour < night_end) or (night_end < night_start and (hour >= night_start or hour < night_end)) %}
-            cheap
-
-# CHEAP DAY (np. midday)
-          {% elif (hour >= day_start and hour < day_end) or (day_end < day_start and (hour >= day_start or hour < day_end)) %}
-            cheap
-
-# RESZTA = NORMAL
           {% else %}
-            normal
+            cheap
           {% endif %}
