@@ -68,6 +68,24 @@ input_number:
 # TARYFA DOSTAWCY – KONFIGURACJA (teraz z 3 strefami)
 # ================================================
 
+  tariff_normal_start_hour:
+    name: Taryfa Dostawcy - Normal Start (godzina)  # np. midday 13-16
+    min: 0
+    max: 23
+    step: 1
+    unit_of_measurement: "h"
+    icon: mdi:clock-start
+    initial: 7
+
+  tariff_normal_end_hour:
+    name: Taryfa Dostawcy - Normal End (godzina)
+    min: 0
+    max: 23
+    step: 1
+    unit_of_measurement: "h"
+    icon: mdi:clock-end
+    initial: 13
+
   tariff_peak_start_hour:
     name: Taryfa Dostawcy - Peak Start (godzina)
     min: 0
@@ -75,7 +93,7 @@ input_number:
     step: 1
     unit_of_measurement: "h"
     icon: mdi:clock-start
-    initial: 17
+    initial: 16
 
   tariff_peak_end_hour:
     name: Taryfa Dostawcy - Peak End (godzina)
@@ -85,42 +103,6 @@ input_number:
     unit_of_measurement: "h"
     icon: mdi:clock-end
     initial: 21
-
-  tariff_cheap_night_start_hour:
-    name: Taryfa Dostawcy - Cheap Night Start (godzina)
-    min: 0
-    max: 23
-    step: 1
-    unit_of_measurement: "h"
-    icon: mdi:clock-start
-    initial: 0
-
-  tariff_cheap_night_end_hour:
-    name: Taryfa Dostawcy - Cheap Night End (godzina)
-    min: 0
-    max: 23
-    step: 1
-    unit_of_measurement: "h"
-    icon: mdi:clock-end
-    initial: 7
-
-  tariff_cheap_day_start_hour:
-    name: Taryfa Dostawcy - Cheap Day Start (godzina)  # np. midday 13-16
-    min: 0
-    max: 23
-    step: 1
-    unit_of_measurement: "h"
-    icon: mdi:clock-start
-    initial: 13
-
-  tariff_cheap_day_end_hour:
-    name: Taryfa Dostawcy - Cheap Day End (godzina)
-    min: 0
-    max: 23
-    step: 1
-    unit_of_measurement: "h"
-    icon: mdi:clock-end
-    initial: 16
 
 input_text:
 
