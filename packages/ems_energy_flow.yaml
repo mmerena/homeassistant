@@ -12,16 +12,9 @@ template:
         icon: mdi:solar-power
 
         state: >
-
           {% set pv = states('sensor.pv_power') | float(0) %}
           {% set load = states('sensor.load_power') | float(0) %}
-          {% if pv < load %}
-            {{ pv | round(0) }}
-          {% else %}
-            {{ load | round(0) }}
-          {% endif %}
-
-          {{ [pv,load] | min | round(0) }}
+          {{ [pv, load] | min | round(0) }}
 
 
 # ------------------------------------------------
