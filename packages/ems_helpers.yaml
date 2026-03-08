@@ -74,7 +74,7 @@ input_number:
     max: 2
     step: 0.01
     unit_of_measurement: PLN/kWh
-    initial: 0.40
+    initial: 0.50
 
   tariff_normal_price:
     name: Taryfa Dostawcy - Normal Price
@@ -82,7 +82,7 @@ input_number:
     max: 2
     step: 0.01
     unit_of_measurement: PLN/kWh
-    initial: 0.40
+    initial: 0.80
 
   tariff_normal_start_hour:
     name: Taryfa Dostawcy - Normal Start (godzina)
@@ -108,7 +108,7 @@ input_number:
     max: 2
     step: 0.01
     unit_of_measurement: PLN/kWh
-    initial: 0.40
+    initial: 1.20
 
   tariff_peak_start_hour:
     name: Taryfa Dostawcy - Peak Start (godzina)
@@ -163,3 +163,16 @@ input_boolean:
     name: Taryfa Dostawcy - Cheap w Święta
     initial: on
     icon: mdi:calendar-multiselect
+
+automation:
+  - alias: Update export price every quarter
+    trigger:
+      - platform: time_pattern
+        minutes: "/15"
+
+    action:
+      - service: input_number.set_value
+        target:
+          entity_id: input_number.energy_export_price
+        data:
+          value: "{{ states('sensor.rce_current_quarter_price') | float(0) }}"
