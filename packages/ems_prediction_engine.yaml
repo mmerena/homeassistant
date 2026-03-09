@@ -67,3 +67,20 @@ template:
           {% else %}
             50
           {% endif %}
+
+# ------------------------------------------------
+# TOMORROW OUTLOOK (używany w strategii)
+# ------------------------------------------------
+
+      - name: EMS Tomorrow Outlook
+        unique_id: ems_tomorrow_outlook
+        icon: mdi:clock-future
+
+        state: >
+          {% set expensive = states('sensor.rce_expensive_hours_tomorrow') | default('') %}
+          {% set count = expensive.split(',')|length if expensive else 0 %}
+          {% if count >= 2 %}
+            very_high
+          {% else %}
+            normal
+          {% endif %}
