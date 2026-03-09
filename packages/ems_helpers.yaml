@@ -8,6 +8,14 @@ input_number:
     unit_of_measurement: "%"
     initial: 20
 
+  foxess_ems_max_soc:
+    name: FoxESS EMS Max SOC
+    min: 50
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+    initial: 95
+
   foxess_ems_fd_soc:
     name: FoxESS EMS Force Discharge SOC
     min: 5
