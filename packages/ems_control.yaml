@@ -14,6 +14,7 @@ automation:
         entity_id:
           - sensor.ems_foxess_mode
           - input_number.foxess_ems_min_soc
+          - input_number.foxess_ems_max_soc
           - input_number.foxess_ems_fd_soc
           - input_number.foxess_ems_fd_power
           - sensor.ems_energy_strategy
@@ -28,10 +29,13 @@ automation:
           {% set end_time = (23 * 256) + 59 %}
           {% set work_mode = states('sensor.ems_foxess_mode') | int(1) %}
           {% set min_soc = states('input_number.foxess_ems_min_soc') | int(20) %}
+          {% set max_soc = states('input_number.foxess_ems_max_soc') | int(95) %}
           {% set fd_soc = states('input_number.foxess_ems_fd_soc') | int(20) %}
           {% set fd_power = states('input_number.foxess_ems_fd_power') | int(4000) if states('sensor.ems_energy_strategy') in ['discharge','export'] else 0 %}
 
-          {% set signature = enable ~ '-' ~ start_time ~ '-' ~ end_time ~ '-' ~ work_mode ~ '-' ~ min_soc ~ '-' ~ fd_soc ~ '-' ~ fd_power %}
+          {% set packed_soc = (max_soc * 256) + min_soc %}
+
+          {% set signature = enable ~ '-' ~ start_time ~ '-' ~ end_time ~ '-' ~ work_mode ~ '-' ~ packed_soc ~ '-' ~ fd_soc ~ '-' ~ fd_power %}
 
           {{ signature != states('input_text.foxess_last_signature') }}
 
@@ -54,7 +58,7 @@ automation:
             - "{{ (0 * 256) + 0 }}"
             - "{{ (23 * 256) + 59 }}"
             - "{{ states('sensor.ems_foxess_mode') | int(1) }}"
-            - "{{ states('input_number.foxess_ems_min_soc') | int(20) }}"
+            - "{{ (states('input_number.foxess_ems_max_soc') | int(95) * 256) + states('input_number.foxess_ems_min_soc') | int(20) }}"
             - "{{ states('input_number.foxess_ems_fd_soc') | int(20) }}"
             - "{{ states('input_number.foxess_ems_fd_power') | int(4000) if states('sensor.ems_energy_strategy') in ['discharge','export'] else 0 }}"
             - 0
@@ -77,7 +81,8 @@ automation:
             {% set end_time = (23 * 256) + 59 %}
             {% set work_mode = states('sensor.ems_foxess_mode') | int(1) %}
             {% set min_soc = states('input_number.foxess_ems_min_soc') | int(20) %}
+            {% set max_soc = states('input_number.foxess_ems_max_soc') | int(95) %}
             {% set fd_soc = states('input_number.foxess_ems_fd_soc') | int(20) %}
             {% set fd_power = states('input_number.foxess_ems_fd_power') | int(4000) if states('sensor.ems_energy_strategy') in ['discharge','export'] else 0 %}
-
-            {{ enable ~ '-' ~ start_time ~ '-' ~ end_time ~ '-' ~ work_mode ~ '-' ~ min_soc ~ '-' ~ fd_soc ~ '-' ~ fd_power }}
+            {% set packed_soc = (max_soc * 256) + min_soc %}
+            {{ enable ~ '-' ~ start_time ~ '-' ~ end_time ~ '-' ~ work_mode ~ '-' ~ packed_soc ~ '-' ~ fd_soc ~ '-' ~ fd_power }}
