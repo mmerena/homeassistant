@@ -22,7 +22,7 @@ input_number:
     max: 10000
     step: 100
     unit_of_measurement: W
-    initial: 0
+    initial: 4000
 
   energy_export_price:
     name: Energy Export Price
