@@ -19,6 +19,8 @@ automation:
           - input_number.foxess_ems_fd_power
           - sensor.ems_energy_strategy
           - sensor.ems_dynamic_max_soc
+          - sensor.energy_tariff_supplier
+          - sensor.ems_arbitrage_action
 
     condition:
 
@@ -59,7 +61,7 @@ automation:
             - "{{ (0 * 256) + 0 }}"
             - "{{ (23 * 256) + 59 }}"
             - "{{ states('sensor.ems_foxess_mode') | int(1) }}"
-            - "{{ (states('sensor.ems_dynamic_max_soc') | int(95) * 256) + states('input_number.foxess_ems_min_soc') | int(20) }}"   # Dynamic Max + Min
+            - "{{ (states('sensor.ems_dynamic_max_soc') | int(95) * 256) + states('input_number.foxess_ems_min_soc') | int(20) }}"
             - "{{ states('input_number.foxess_ems_fd_soc') | int(20) }}"
             - "{{ states('input_number.foxess_ems_fd_power') | int(4000) if states('sensor.ems_energy_strategy') in ['discharge','export'] else 0 }}"
             - 0
