@@ -74,26 +74,3 @@ template:
           {% else %}
             1
           {% endif %}
-
-# ------------------------------------------------
-# DYNAMIC MAX SOC (zależny od trybu i taryfy)
-# ------------------------------------------------
-      - name: EMS Dynamic Max SOC
-        unique_id: ems_dynamic_max_soc
-        unit_of_measurement: "%"
-        icon: mdi:battery-sync
-        state: >
-          {% set strategy = states('sensor.ems_energy_strategy') %}
-          {% set tariff = states('sensor.energy_tariff_supplier') %}
-          {% set arbitrage = states('sensor.ems_arbitrage_action') %}
-          {% set override = states('sensor.ems_override_strategy') %}
-          {% set tomorrow = states('sensor.ems_tomorrow_outlook') | default('normal') %}
-          {% set limit = states('input_number.foxess_ems_max_soc') | int(98) %}
-
-          {% if override == 'force_charge' or strategy == 'charge' or arbitrage == 'charge' or (tariff == 'cheap' and tomorrow == 'very_high') %}
-            {{ [100, limit] | min }}
-          {% elif strategy in ['discharge', 'export'] or override in ['force_discharge', 'force_export'] or tariff == 'peak' %}
-            {{ [60, limit] | min }}
-          {% else %}
-            {{ [95, limit] | min }}
-          {% endif %}
