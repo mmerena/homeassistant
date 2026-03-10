@@ -9,12 +9,12 @@ input_number:
     initial: 20
 
   foxess_ems_max_soc:
-    name: FoxESS EMS Max SOC
+    name: FoxESS EMS Max SOC Ceiling
     min: 50
     max: 100
     step: 1
     unit_of_measurement: "%"
-    initial: 95
+    initial: 98
 
   foxess_ems_fd_soc:
     name: FoxESS EMS Force Discharge SOC
@@ -30,7 +30,7 @@ input_number:
     max: 10000
     step: 100
     unit_of_measurement: W
-    initial: 4000
+    initial: 4500
 
   energy_export_price:
     name: Energy Export Price
@@ -71,10 +71,6 @@ input_number:
     step: 0.1
     unit_of_measurement: kWh
     initial: 12
-
-# ================================================
-# TARYFA DOSTAWCY – KONFIGURACJA (teraz z 3 strefami)
-# ================================================
 
   tariff_cheap_price:
     name: Taryfa Dostawcy - Cheap Price
@@ -163,102 +159,112 @@ input_select:
 input_boolean:
 
   tariff_weekend_cheap:
-    name: Taryfa Dostawcy - Cheap w Weekend'y
+    name: "Taryfa Dostawcy - Cheap w Weekend'y"
     initial: on
     icon: mdi:calendar-weekend
 
   tariff_holiday_cheap:
-    name: Taryfa Dostawcy - Cheap w Święta
+    name: "Taryfa Dostawcy - Cheap w Święta"
     initial: on
     icon: mdi:calendar-multiselect
 
 automation:
 
+  # ------------------------------------------------
+  # SYNC TARYFY Z BAZY SQL → INPUT HELPERS
+  # ------------------------------------------------
   - alias: Sync Supplier Tariff Helpers
+    id: ems_sync_tariff_from_sql
     mode: single
 
     trigger:
+      - platform: homeassistant
+        event: start
+      - platform: time_pattern
+        hours: "/1"
       - platform: state
         entity_id: sensor.tariff_supplier
 
-      - platform: homeassistant
-        event: start
-
     action:
-
-      - service: input_number.set_value
-        target:
-          entity_id: input_number.tariff_cheap_price
-        data:
-          value: "{{ state_attr('sensor.tariff_supplier','cheap_price') | float }}"
-
-      - service: input_number.set_value
-        target:
-          entity_id: input_number.tariff_normal_price
-        data:
-          value: "{{ state_attr('sensor.tariff_supplier','normal_price') | float }}"
-
-      - service: input_number.set_value
-        target:
-          entity_id: input_number.tariff_normal_start_hour
-        data:
-          value: "{{ state_attr('sensor.tariff_supplier','normal_start_hour') | int }}"
-
-      - service: input_number.set_value
-        target:
-          entity_id: input_number.tariff_normal_end_hour
-        data:
-          value: "{{ state_attr('sensor.tariff_supplier','normal_end_hour') | int }}"
-
-      - service: input_number.set_value
-        target:
-          entity_id: input_number.tariff_peak_price
-        data:
-          value: "{{ state_attr('sensor.tariff_supplier','peak_price') | float }}"
-
-      - service: input_number.set_value
-        target:
-          entity_id: input_number.tariff_peak_start_hour
-        data:
-          value: "{{ state_attr('sensor.tariff_supplier','peak_start_hour') | int }}"
-
-      - service: input_number.set_value
-        target:
-          entity_id: input_number.tariff_peak_end_hour
-        data:
-          value: "{{ state_attr('sensor.tariff_supplier','peak_end_hour') | int }}"
-
       - choose:
-
           - conditions:
               - condition: template
-                value_template: "{{ state_attr('sensor.tariff_supplier','weekend_cheap') | int == 1 }}"
+                value_template: "{{ states('sensor.tariff_supplier') not in ['unknown', 'unavailable', ''] }}"
             sequence:
-              - service: input_boolean.turn_on
+              # Ceny
+              - service: input_number.set_value
                 target:
-                  entity_id: input_boolean.tariff_weekend_cheap
+                  entity_id: input_number.tariff_cheap_price
+                data:
+                  value: "{{ state_attr('sensor.tariff_supplier', 'cheap_price') | float(0.50) }}"
 
-        default:
-          - service: input_boolean.turn_off
-            target:
-              entity_id: input_boolean.tariff_weekend_cheap
-
-      - choose:
-
-          - conditions:
-              - condition: template
-                value_template: "{{ state_attr('sensor.tariff_supplier','holiday_cheap') | int == 1 }}"
-            sequence:
-              - service: input_boolean.turn_on
+              - service: input_number.set_value
                 target:
-                  entity_id: input_boolean.tariff_holiday_cheap
+                  entity_id: input_number.tariff_normal_price
+                data:
+                  value: "{{ state_attr('sensor.tariff_supplier', 'normal_price') | float(0.80) }}"
 
-        default:
-          - service: input_boolean.turn_off
-            target:
-              entity_id: input_boolean.tariff_holiday_cheap
+              - service: input_number.set_value
+                target:
+                  entity_id: input_number.tariff_peak_price
+                data:
+                  value: "{{ state_attr('sensor.tariff_supplier', 'peak_price') | float(1.20) }}"
 
+              # Godziny
+              - service: input_number.set_value
+                target:
+                  entity_id: input_number.tariff_normal_start_hour
+                data:
+                  value: "{{ state_attr('sensor.tariff_supplier', 'normal_start_hour') | int(7) }}"
 
+              - service: input_number.set_value
+                target:
+                  entity_id: input_number.tariff_normal_end_hour
+                data:
+                  value: "{{ state_attr('sensor.tariff_supplier', 'normal_end_hour') | int(13) }}"
+
+              - service: input_number.set_value
+                target:
+                  entity_id: input_number.tariff_peak_start_hour
+                data:
+                  value: "{{ state_attr('sensor.tariff_supplier', 'peak_start_hour') | int(16) }}"
+
+              - service: input_number.set_value
+                target:
+                  entity_id: input_number.tariff_peak_end_hour
+                data:
+                  value: "{{ state_attr('sensor.tariff_supplier', 'peak_end_hour') | int(21) }}"
+
+              # Flagi weekend / święta
+              - choose:
+                  - conditions:
+                      - condition: template
+                        value_template: "{{ state_attr('sensor.tariff_supplier', 'weekend_cheap') | int(0) == 1 }}"
+                    sequence:
+                      - service: input_boolean.turn_on
+                        target:
+                          entity_id: input_boolean.tariff_weekend_cheap
+                    default:
+                      - service: input_boolean.turn_off
+                        target:
+                          entity_id: input_boolean.tariff_weekend_cheap
+
+              - choose:
+                  - conditions:
+                      - condition: template
+                        value_template: "{{ state_attr('sensor.tariff_supplier', 'holiday_cheap') | int(0) == 1 }}"
+                    sequence:
+                      - service: input_boolean.turn_on
+                        target:
+                          entity_id: input_boolean.tariff_holiday_cheap
+                    default:
+                      - service: input_boolean.turn_off
+                        target:
+                          entity_id: input_boolean.tariff_holiday_cheap
+
+  # ------------------------------------------------
+  # UPDATE EXPORT PRICE EVERY QUARTER
+  # ------------------------------------------------
   - alias: Update export price every quarter
 
     trigger:
