@@ -15,7 +15,6 @@ template:
 
           {% set export_price = states('sensor.ems_export_price') | float(0) %}
           {% set import_price = states('sensor.ems_import_price') | float(0) %}
-
           {{ (export_price - import_price) | round(3) }}
 
 
@@ -31,7 +30,6 @@ template:
 
           {% set margin = states('sensor.ems_arbitrage_margin') | float(0) %}
           {% set threshold = states('input_number.arbitrage_threshold') | float(0.25) %}
-
           {% if margin > threshold %}
             profitable
           {% else %}
@@ -52,13 +50,10 @@ template:
           {% set opportunity = states('sensor.ems_arbitrage_opportunity') %}
           {% set soc = states('sensor.battery_soc') | float(0) %}
           {% set margin = states('sensor.ems_arbitrage_margin') | float(0) %}
-
           {% if opportunity == 'profitable' and soc > 35 %}
             discharge
-
-          {% elif margin < -0.20 and soc < 75 %}
+          {% elif margin < -0.20 and soc < 75 and tariff in ['cheap','normal'] %}
             charge
-
           {% else %}
             idle
           {% endif %}
