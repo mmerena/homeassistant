@@ -9,45 +9,37 @@ template:
       - name: EMS Energy Strategy
         unique_id: ems_energy_strategy
         icon: mdi:brain
-
         state: >
-
           {% set override = states('sensor.ems_override_strategy') %}
           {% set soc = states('sensor.battery_soc') | float(0) %}
-          {% set target_soc = states('sensor.ems_target_battery_soc') | int(50) %}
-          {% set surplus = states('sensor.ems_pv_surplus_level') %}
+          {% set target = states('sensor.ems_target_battery_soc') | int(50) %}
           {% set tariff = states('sensor.energy_tariff_supplier') %}
           {% set profit = states('sensor.ems_profit_decision') %}
           {% set arbitrage = states('sensor.ems_arbitrage_action') %}
-          {% set tomorrow = states('sensor.ems_tomorrow_outlook') | default('normal') %}
-
+          {% set surplus = states('sensor.ems_pv_surplus_level') %}
+          {% set tomorrow = states('sensor.ems_tomorrow_outlook') %}
+        
           {% if override not in ['auto','idle'] %}
             {{ override }}
-
           {% elif override == 'idle' %}
             self_use
-
           {% else %}
-            {# 1. Najwyższy priorytet – PROFIT (sprzedawaj drogo) #}
-            {% if profit == 'sell' and soc > 30 %}
+            {# 1. TOU – NAJWYŻSZY PRIORYTET #}
+            {% if tariff == 'peak' and soc > 35 %}
+              discharge
+            {% elif tariff in ['cheap','normal'] and soc < target %}
+              charge
+        
+            {# 2. Profit + Arbitrage (tylko jeśli nie koliduje) #}
+            {% elif profit == 'sell' and soc > 30 %}
               export
-
-            {# 2. Arbitrage #}
-            {% elif arbitrage == 'discharge' %}
+            {% elif arbitrage == 'discharge' and soc > 35 %}
               discharge
-            {% elif arbitrage == 'charge' %}
+            {% elif arbitrage == 'charge' and soc < 75 and tariff != 'peak' %}
               charge
-
-            {# 3. Peak taryfa – rozładowuj #}
-            {% elif tariff == 'peak' and soc > 40 %}
-              discharge
-
-            {# 4. Ładuj w tanich godzinach + jutrzejszy peak #}
-            {% elif (tariff in ['cheap','normal'] or tomorrow == 'very_high') and soc < target_soc %}
-              charge
-
-            {# 5. Reszta logiki self-use / surplus #}
-            {% elif surplus in ['very_high','high','medium'] and soc < 95 %}
+        
+            {# 3. Reszta #}
+            {% elif surplus in ['very_high','high'] and soc < 95 %}
               self_use
             {% else %}
               self_use
@@ -74,3 +66,4 @@ template:
           {% else %}
             1
           {% endif %}
+
