@@ -3,43 +3,48 @@ template:
   - sensor:
 
 # ------------------------------------------------
-# EMS ENERGY STRATEGY
+# EMS ENERGY STRATEGY v2.0 – POPRAWIONA LOGIKA
 # ------------------------------------------------
 
       - name: EMS Energy Strategy
         unique_id: ems_energy_strategy
         icon: mdi:brain
+
         state: >
+
           {% set override = states('sensor.ems_override_strategy') %}
           {% set soc = states('sensor.battery_soc') | float(0) %}
-          {% set target = states('sensor.ems_target_battery_soc') | int(50) %}
+          {% set target_soc = states('sensor.ems_target_battery_soc') | int(50) %}
           {% set tariff = states('sensor.energy_tariff_supplier') %}
           {% set profit = states('sensor.ems_profit_decision') %}
           {% set arbitrage = states('sensor.ems_arbitrage_action') %}
           {% set surplus = states('sensor.ems_pv_surplus_level') %}
-          {% set tomorrow = states('sensor.ems_tomorrow_outlook') %}
-        
+          {% set tomorrow = states('sensor.ems_tomorrow_outlook') | default('normal') %}
+
           {% if override not in ['auto','idle'] %}
             {{ override }}
+
           {% elif override == 'idle' %}
             self_use
+
           {% else %}
-            {# 1. TOU – NAJWYŻSZY PRIORYTET #}
+            {# 1. NAJWYŻSZY PRIORYTET: TARYFA DOSTAWCY (TOU) #}
             {% if tariff == 'peak' and soc > 35 %}
               discharge
-            {% elif tariff in ['cheap','normal'] and soc < target %}
+
+            {% elif tariff in ['cheap','normal'] and soc < target_soc %}
               charge
-        
-            {# 2. Profit + Arbitrage (tylko jeśli nie koliduje) #}
+
+            {# 2. Profit + Arbitrage (tylko jeśli nie koliduje z TOU) #}
             {% elif profit == 'sell' and soc > 30 %}
               export
             {% elif arbitrage == 'discharge' and soc > 35 %}
               discharge
             {% elif arbitrage == 'charge' and soc < 75 and tariff != 'peak' %}
               charge
-        
-            {# 3. Reszta #}
-            {% elif surplus in ['very_high','high'] and soc < 95 %}
+
+            {# 3. Self-use przy nadmiarze PV #}
+            {% elif surplus in ['very_high','high','medium'] and soc < 95 %}
               self_use
             {% else %}
               self_use
@@ -47,7 +52,7 @@ template:
           {% endif %}
 
 # ------------------------------------------------
-# FOXESS MODE MAPPING
+# FOXESS MODE MAPPING (bez zmian)
 # ------------------------------------------------
 
       - name: EMS FoxESS Mode
@@ -66,4 +71,3 @@ template:
           {% else %}
             1
           {% endif %}
-
