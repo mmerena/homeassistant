@@ -1,9 +1,11 @@
 template:
-
-  - sensor:
+  - trigger:
+      - platform: time_pattern
+        minutes: "/1"
+    sensor:
 
 # ------------------------------------------------
-# TARYFA DOSTAWCY – 3 strefy (full kontrola)
+# TARYFA DOSTAWCY – 3 strefy
 # ------------------------------------------------
 
       - name: Energy Tariff Supplier
@@ -14,7 +16,7 @@ template:
 
           {% set hour = now().hour %}
           {% set weekday = now().weekday() %}
-          {% set is_holiday = not states('binary_sensor.workday_sensor') %}
+          {% set workday = is_state('binary_sensor.workday_sensor','on') %}
 
           {% set weekend_cheap = states('input_boolean.tariff_weekend_cheap') == 'on' %}
           {% set holiday_cheap = states('input_boolean.tariff_holiday_cheap') == 'on' %}
@@ -25,7 +27,7 @@ template:
           {% set normal_start = states('input_number.tariff_normal_start_hour') | int(7) %}
           {% set normal_end   = states('input_number.tariff_normal_end_hour') | int(13) %}
 
-          {% if ( weekend_cheap and weekday in [5,6] ) or ( holiday_cheap and is_holiday == 'on' ) %}
+          {% if ( weekend_cheap and weekday in [5,6] ) or ( holiday_cheap and not workday ) %}
             cheap
 
           {% elif hour >= peak_start and hour < peak_end %}
