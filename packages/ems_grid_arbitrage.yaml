@@ -50,10 +50,14 @@ template:
           {% set opportunity = states('sensor.ems_arbitrage_opportunity') %}
           {% set soc = states('sensor.battery_soc') | float(0) %}
           {% set margin = states('sensor.ems_arbitrage_margin') | float(0) %}
+          {% set tariff = states('sensor.energy_tariff_supplier') %}
+
           {% if opportunity == 'profitable' and soc > 35 %}
             discharge
+
           {% elif margin < -0.20 and soc < 75 and tariff in ['cheap','normal'] %}
             charge
+
           {% else %}
             idle
           {% endif %}
