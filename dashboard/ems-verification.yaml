@@ -1,4 +1,4 @@
-title: EMS – Weryfikacja Jednostek i Decyzji
+title: EMS – Weryfikacja Jednostek & Decyzji
 path: ems-verification
 icon: mdi:shield-check
 cards:
@@ -6,11 +6,9 @@ cards:
   - type: markdown
     content: |
       ## 🔥 EMS VERIFICATION DASHBOARD
-      Sprawdź kluczowe sensory przed decyzjami.  
-      **Żółte** = wymaga uwagi | **Czerwone** = prawie na pewno błąd jednostek/skali.
-
+  # ==================== 1. BATERIA & POJEMNOŚĆ (z BMS1 + BMS2) ====================
   - type: entities
-    title: 1. Bateria i Pojemność
+    title: 1. Bateria & Pojemność (NAJWAŻNIEJSZE!)
     entities:
       - entity: sensor.ems_battery_capacity_real
         name: Pojemność rzeczywista z BMS (kWh)
@@ -19,7 +17,9 @@ cards:
       - entity: sensor.foxess_38333_bms2_design_energy
         name: BMS2 Design Energy RAW (Wh)
       - entity: sensor.ems_battery_soc
-        name: SOC baterii (%)
+        name: SOC BMS1 (%)
+      - entity: sensor.ems_battery_soc_bms2
+        name: SOC BMS2 (%)
       - entity: sensor.ems_battery_stored_energy
         name: Energia przechowywana (kWh)
       - entity: sensor.ems_planned_battery_soc
@@ -27,8 +27,9 @@ cards:
       - entity: sensor.ems_dynamic_max_soc
         name: Dynamic Max SOC (%)
 
+  # ==================== 2. CENY & ARBITRAŻ ====================
   - type: entities
-    title: 2. Ceny i Arbitraż RCE
+    title: 2. Ceny & Arbitraż RCE
     entities:
       - entity: sensor.ems_export_price
         name: Export Price RCE (PLN/kWh)
@@ -43,15 +44,18 @@ cards:
       - entity: sensor.ems_tomorrow_sell_opportunity
         name: Jutrzejsza okazja sprzedaży RCE
 
+  # ==================== 3. MOC & PRZEPŁYWY (z BMS2) ====================
   - type: entities
-    title: 3. Moc i Przepływy energii
+    title: 3. Moc & Przepływy energii
     entities:
       - entity: sensor.ems_pv_power
         name: PV Power (kW)
       - entity: sensor.ems_battery_power
-        name: Battery Power (W) – >0 ładuje, <0 rozładowuje
+        name: Battery Power BMS1 (W)
+      - entity: sensor.ems_battery_power_bms2
+        name: Battery Power BMS2 (W)
       - entity: sensor.ems_grid_power
-        name: Grid Power (W) – >0 import, <0 eksport
+        name: Grid Power (W)
       - entity: sensor.ems_load_power
         name: Load Power (W)
       - entity: sensor.ems_energy_balance
@@ -59,6 +63,7 @@ cards:
       - entity: sensor.ems_pv_surplus
         name: PV Surplus (W)
 
+  # ==================== 4. DECYZJE STERUJĄCE ====================
   - type: entities
     title: 4. Decyzje sterujące
     entities:
