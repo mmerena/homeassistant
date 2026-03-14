@@ -3,11 +3,7 @@ template:
   - sensor:
 
 # ------------------------------------------------
-# EMS SOURCES v2.1 – FoxESS P3-10.0-SH + EQ4800 (30 kWh)
-# ------------------------------------------------
-
-# ------------------------------------------------
-# PV POWER
+# EMS SOURCES v2.1-final – FoxESS P3-10.0-SH + EQ4800
 # ------------------------------------------------
 
       - name: EMS PV Power
@@ -16,14 +12,8 @@ template:
         device_class: power
         state_class: measurement
         icon: mdi:solar-power
-
         state: >
           {{ states('sensor.foxess_39118_total_pv_input_power') | float(0) }}
-
-
-# ------------------------------------------------
-# LOAD POWER
-# ------------------------------------------------
 
       - name: EMS Load Power
         unique_id: ems_load_power
@@ -31,14 +21,8 @@ template:
         device_class: power
         state_class: measurement
         icon: mdi:home-lightning-bolt
-
         state: >
           {{ states('sensor.foxess_39225_load_combined_power') | float(0) }}
-
-
-# ------------------------------------------------
-# GRID POWER
-# ------------------------------------------------
 
       - name: EMS Grid Power
         unique_id: ems_grid_power
@@ -46,14 +30,8 @@ template:
         device_class: power
         state_class: measurement
         icon: mdi:transmission-tower
-
         state: >
           {{ states('sensor.foxess_39168_meter_active_power') | float(0) }}
-
-
-# ------------------------------------------------
-# BATTERY POWER
-# ------------------------------------------------
 
       - name: EMS Battery Power
         unique_id: ems_battery_power
@@ -61,14 +39,8 @@ template:
         device_class: power
         state_class: measurement
         icon: mdi:battery
-
         state: >
           {{ states('sensor.foxess_39162_battery1_charge_discharge_power') | float(0) }}
-
-
-# ------------------------------------------------
-# BATTERY SOC
-# ------------------------------------------------
 
       - name: EMS Battery SOC
         unique_id: ems_battery_soc
@@ -76,6 +48,5 @@ template:
         device_class: battery
         state_class: measurement
         icon: mdi:battery-high
-
         state: >
           {{ states('sensor.foxess_37612_bms1_soc') | float(0) }}
