@@ -3,24 +3,28 @@ template:
   - sensor:
 
 # ------------------------------------------------
-# EMS CONTROL ACTIVE MODE
+# EMS CONTROL ACTIVE MODE v2.1
 # ------------------------------------------------
 
       - name: EMS Control Active Mode
         unique_id: ems_control_active_mode
         icon: mdi:remote
+        device_class: enum
+        state_class: measurement
 
         state: >
           {{ states('input_select.ems_control_mode') }}
 
 
 # ------------------------------------------------
-# EMS OVERRIDE STRATEGY
+# EMS OVERRIDE STRATEGY v2.1-fix
 # ------------------------------------------------
 
       - name: EMS Override Strategy
         unique_id: ems_override_strategy
         icon: mdi:toggle-switch
+        device_class: enum
+        state_class: measurement
 
         state: >
 
