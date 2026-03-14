@@ -3,7 +3,34 @@ template:
   - sensor:
 
 # ------------------------------------------------
-# EMS ENERGY STRATEGY v2.0 – POPRAWIONA LOGIKA
+# EMS TOMORROW SELL OPPORTUNITY (v2.1-fix – zabezpieczony przed float error)
+# ------------------------------------------------
+
+      - name: EMS Tomorrow Sell Opportunity
+        unique_id: ems_tomorrow_sell_opportunity
+        icon: mdi:clock-future
+
+        state: >
+          {# --- BEZPIECZNA WERSJA – zero ryzyka float #}
+          {% set expensive_str = states('sensor.rce_expensive_hours_tomorrow') | default('') | string %}
+          {% set count = expensive_str.split(',')|length if expensive_str | trim else 0 %}
+
+          {# bezpieczne pobieranie cen jutro #}
+          {% set attr = state_attr('sensor.rce_prices_tomorrow', 'hours') %}
+          {% set price_data = attr | from_json if attr is string else {} %}
+          {% set prices = price_data.values() | map('float') | list if price_data is mapping else [] %}
+          {% set max_price = prices | max | default(0) %}
+
+          {% if count >= 3 and max_price > 1.20 %}
+            very_high
+          {% elif count >= 2 and max_price > 0.90 %}
+            high
+          {% else %}
+            normal
+          {% endif %}
+
+# ------------------------------------------------
+# EMS ENERGY STRATEGY v2.1-fix
 # ------------------------------------------------
 
       - name: EMS Energy Strategy
@@ -19,7 +46,7 @@ template:
           {% set profit = states('sensor.ems_profit_decision') %}
           {% set arbitrage = states('sensor.ems_arbitrage_action') %}
           {% set surplus = states('sensor.ems_pv_surplus_level') %}
-          {% set tomorrow = states('sensor.ems_tomorrow_outlook') | default('normal') %}
+          {% set tomorrow_sell = states('sensor.ems_tomorrow_sell_opportunity') | default('normal') %}
 
           {% if override not in ['auto','idle'] %}
             {{ override }}
@@ -28,14 +55,20 @@ template:
             self_use
 
           {% else %}
-            {# 1. NAJWYŻSZY PRIORYTET: TARYFA DOSTAWCY (TOU) #}
-            {% if tariff == 'peak' and soc > 35 %}
+            {# 0. NAJWYŻSZY PRIORYTET: JUTRO RCE PEAK #}
+            {% if tomorrow_sell == 'very_high' and soc < 85 %}
+              charge
+            {% elif tomorrow_sell == 'very_high' and soc > 40 %}
+              export
+
+            {# 1. TARYFA DOSTAWCY #}
+            {% elif tariff == 'peak' and soc > 35 %}
               discharge
 
             {% elif tariff in ['cheap','normal'] and soc < target_soc %}
               charge
 
-            {# 2. Profit + Arbitrage (tylko jeśli nie koliduje z TOU) #}
+            {# 2. Profit + Arbitrage #}
             {% elif profit == 'sell' and soc > 30 %}
               export
             {% elif arbitrage == 'discharge' and soc > 35 %}
@@ -43,7 +76,7 @@ template:
             {% elif arbitrage == 'charge' and soc < 75 and tariff != 'peak' %}
               charge
 
-            {# 3. Self-use przy nadmiarze PV #}
+            {# 3. Self-use #}
             {% elif surplus in ['very_high','high','medium'] and soc < 95 %}
               self_use
             {% else %}
@@ -52,7 +85,7 @@ template:
           {% endif %}
 
 # ------------------------------------------------
-# FOXESS MODE MAPPING (bez zmian)
+# FOXESS MODE MAPPING
 # ------------------------------------------------
 
       - name: EMS FoxESS Mode
