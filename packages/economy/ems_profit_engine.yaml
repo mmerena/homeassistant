@@ -48,7 +48,7 @@ template:
 
 
 # ------------------------------------------------
-# PROFIT DECISION
+# PROFIT DECISION (NAPRAWIONY – KLUCZOWA POPRAWKA!)
 # ------------------------------------------------
 
       - name: EMS Profit Decision
@@ -59,9 +59,25 @@ template:
 
           {% set export_price = states('sensor.ems_export_price') | float(0) %}
           {% set stored_value = states('sensor.ems_stored_energy_value') | float(0) %}
+          {% set tariff = states('sensor.energy_tariff_supplier') %}   {# <-- DODANE – usuwa błąd #}
 
-          {% if export_price > (stored_value + 0.15 if tariff == 'peak' else stored_value - 0.10) %}
+          {# Agresywniejsze progi – sprzedajemy szybciej przy RCE peak #}
+          {% if export_price > (stored_value + 0.20 if tariff == 'peak' else stored_value + 0.05) %}
             sell
           {% else %}
             store
           {% endif %}
+
+
+# ------------------------------------------------
+# PROFIT SPREAD
+# ------------------------------------------------
+
+      - name: EMS Profit Spread
+        unique_id: ems_profit_spread
+        unit_of_measurement: "PLN/kWh"
+        state: >
+          {% set sell = states('sensor.ems_export_price') | float(0) %}
+          {% set buy = states('sensor.ems_import_price') | float(0) %}
+          {% set battery_cost = 0.08 %}
+          {{ (sell - buy - battery_cost) | round(3) }}
