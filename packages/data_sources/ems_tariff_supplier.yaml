@@ -1,25 +1,27 @@
 template:
+
   - trigger:
       - platform: time_pattern
         minutes: "/1"
     sensor:
 
 # ------------------------------------------------
-# TARYFA DOSTAWCY – 3 strefy
+# TARYFA DOSTAWCY – 3 strefy v2.1-fix
 # ------------------------------------------------
 
       - name: Energy Tariff Supplier
         unique_id: energy_tariff_supplier
         icon: mdi:clock
+        device_class: enum
 
         state: >
 
           {% set hour = now().hour %}
           {% set weekday = now().weekday() %}
-          {% set workday = is_state('binary_sensor.workday_sensor','on') %}
+          {% set workday = is_state('binary_sensor.workday_sensor','on') | default(true) %}
 
-          {% set weekend_cheap = states('input_boolean.tariff_weekend_cheap') == 'on' %}
-          {% set holiday_cheap = states('input_boolean.tariff_holiday_cheap') == 'on' %}
+          {% set weekend_cheap = states('input_boolean.tariff_weekend_cheap') == 'on' | default(false) %}
+          {% set holiday_cheap = states('input_boolean.tariff_holiday_cheap') == 'on' | default(false) %}
 
           {% set peak_start = states('input_number.tariff_peak_start_hour') | int(16) %}
           {% set peak_end   = states('input_number.tariff_peak_end_hour') | int(21) %}
@@ -27,7 +29,8 @@ template:
           {% set normal_start = states('input_number.tariff_normal_start_hour') | int(7) %}
           {% set normal_end   = states('input_number.tariff_normal_end_hour') | int(13) %}
 
-          {% if ( weekend_cheap and weekday in [5,6] ) or ( holiday_cheap and not workday ) %}
+          {# Najwyższy priorytet: weekend / święta = cheap #}
+          {% if (weekend_cheap and weekday in [5,6]) or (holiday_cheap and not workday) %}
             cheap
 
           {% elif hour >= peak_start and hour < peak_end %}
