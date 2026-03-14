@@ -19,7 +19,7 @@ template:
 
 
 # ------------------------------------------------
-# ARBITRAGE OPPORTUNITY
+# ARBITRAGE OPPORTUNITY v2.1
 # ------------------------------------------------
 
       - name: EMS Arbitrage Opportunity
@@ -29,7 +29,8 @@ template:
         state: >
 
           {% set margin = states('sensor.ems_arbitrage_margin') | float(0) %}
-          {% set threshold = states('input_number.arbitrage_threshold') | float(0.25) %}
+          {% set threshold = states('input_number.arbitrage_threshold') | float(0.20) %}  {# <-- z helpers v2.1 #}
+
           {% if margin > threshold %}
             profitable
           {% else %}
@@ -38,26 +39,28 @@ template:
 
 
 # ------------------------------------------------
-# ARBITRAGE ACTION
+# ARBITRAGE ACTION v2.1 (z jutrzejszym RCE!)
 # ------------------------------------------------
 
       - name: EMS Arbitrage Action
         unique_id: ems_arbitrage_action
-        icon: mdi:flash
-
         state: >
+          {% set spread = states('sensor.ems_profit_spread') | float(0) %}
+          {% set soc = states('sensor.battery_soc') | float(50) %}
+          {% set tomorrow = states('sensor.ems_tomorrow_sell_opportunity') | default('normal') %}
 
-          {% set opportunity = states('sensor.ems_arbitrage_opportunity') %}
-          {% set soc = states('sensor.battery_soc') | float(0) %}
-          {% set margin = states('sensor.ems_arbitrage_margin') | float(0) %}
-          {% set tariff = states('sensor.energy_tariff_supplier') %}
-
-          {% if opportunity == 'profitable' and soc > 35 %}
-            discharge
-
-          {% elif margin < -0.20 and soc < 75 and tariff in ['cheap','normal'] %}
+          {# NAJWYŻSZY PRIORYTET: jutro bardzo drogie RCE #}
+          {% if tomorrow == 'very_high' and soc > 35 %}
+            export
+          {% elif tomorrow == 'very_high' and soc < 75 %}
             charge
 
+          {% elif spread > 0.25 and soc > 35 %}
+            export
+          {% elif spread > 0.15 and soc > 30 %}
+            discharge
+          {% elif spread < -0.15 and soc < 85 %}
+            charge
           {% else %}
-            idle
+            self_use
           {% endif %}
