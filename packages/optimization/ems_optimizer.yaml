@@ -3,15 +3,15 @@ template:
   - sensor:
 
 # ------------------------------------------------
-# ECONOMIC SCORE
+# ECONOMIC SCORE v2.1
 # ------------------------------------------------
 
       - name: EMS Economic Score
         unique_id: ems_economic_score
+        unit_of_measurement: PLN/kWh
         icon: mdi:finance
 
         state: >
-
           {% set export_price = states('sensor.ems_export_price') | float(0) %}
           {% set import_price = states('sensor.ems_import_price') | float(0) %}
 
@@ -19,7 +19,7 @@ template:
 
 
 # ------------------------------------------------
-# ENERGY SCORE
+# ENERGY SCORE v2.1
 # ------------------------------------------------
 
       - name: EMS Energy Score
@@ -27,14 +27,13 @@ template:
         icon: mdi:solar-power
 
         state: >
-
           {% set surplus = states('sensor.ems_pv_surplus') | float(0) %}
 
-          {% if surplus > 4000 %}
+          {% if surplus > 6000 %}
             3
-          {% elif surplus > 2000 %}
+          {% elif surplus > 3000 %}
             2
-          {% elif surplus > 500 %}
+          {% elif surplus > 1000 %}
             1
           {% else %}
             0
@@ -42,7 +41,7 @@ template:
 
 
 # ------------------------------------------------
-# BATTERY SCORE
+# BATTERY SCORE v2.1
 # ------------------------------------------------
 
       - name: EMS Battery Score
@@ -50,7 +49,6 @@ template:
         icon: mdi:battery
 
         state: >
-
           {% set soc = states('sensor.battery_soc') | float(0) %}
 
           {% if soc > 90 %}
@@ -65,7 +63,7 @@ template:
 
 
 # ------------------------------------------------
-# OPTIMIZER DECISION
+# OPTIMIZER DECISION v2.1-fix (z jutrzejszym RCE!)
 # ------------------------------------------------
 
       - name: EMS Optimizer Decision
@@ -73,25 +71,25 @@ template:
         icon: mdi:brain
 
         state: >
-
           {% set economic = states('sensor.ems_economic_score') | float(0) %}
           {% set energy = states('sensor.ems_energy_score') | float(0) %}
           {% set battery = states('sensor.ems_battery_score') | float(0) %}
           {% set arbitrage = states('sensor.ems_arbitrage_opportunity') %}
+          {% set tomorrow = states('sensor.ems_tomorrow_sell_opportunity') | default('normal') %}
+          {% set soc = states('sensor.battery_soc') | float(0) %}
 
-# HIGH PROFIT SELL (obniżony próg z 0.40 → 0.25)
-          {% if economic > 0.25 and battery > 1 %}
+          {# NAJWYŻSZY PRIORYTET: jutro bardzo drogie RCE #}
+          {% if tomorrow == 'very_high' and soc < 85 %}
+            charge
+          {% elif tomorrow == 'very_high' and soc > 40 %}
             sell
 
-# GRID ARBITRAGE
+          {% elif economic > 0.25 and battery > 1 %}
+            sell
           {% elif arbitrage == 'profitable' and battery < 2 %}
             arbitrage
-
-# PV SURPLUS CHARGE
           {% elif energy > 1 and battery < 3 %}
             charge
-
-# DEFAULT
           {% else %}
             self_use
           {% endif %}
