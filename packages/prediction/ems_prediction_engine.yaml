@@ -68,6 +68,7 @@ template:
             50
           {% endif %}
 
+
 # ------------------------------------------------
 # TOMORROW OUTLOOK (używany w strategii)
 # ------------------------------------------------
@@ -85,25 +86,29 @@ template:
             normal
           {% endif %}
 
+
 # ------------------------------------------------
-# DYNAMIC MAX SOC (zależny od trybu i taryfy)
+# DYNAMIC MAX SOC (POPRAWIONA LOGIKA – NAJWAŻNIEJSZA ZMIANA!)
 # ------------------------------------------------
+
       - name: EMS Dynamic Max SOC
         unique_id: ems_dynamic_max_soc
         unit_of_measurement: "%"
-        icon: mdi:battery-sync
         state: >
-          {% set strategy = states('sensor.ems_energy_strategy') %}
-          {% set tariff = states('sensor.energy_tariff_supplier') %}
-          {% set arbitrage = states('sensor.ems_arbitrage_action') %}
-          {% set override = states('sensor.ems_override_strategy') %}
-          {% set tomorrow = states('sensor.ems_tomorrow_outlook') | default('normal') %}
+          {% set spread = states('sensor.ems_profit_spread') | float(0) %}
+          {% set tomorrow_sell = states('sensor.ems_tomorrow_sell_opportunity') | default('normal') %}
           {% set limit = states('input_number.foxess_ems_max_soc') | int(98) %}
 
-          {% if override == 'force_charge' or strategy == 'charge' or arbitrage == 'charge' or (tariff == 'cheap' and tomorrow == 'very_high') %}
-            {{ [100, limit] | min }}
-          {% elif strategy in ['discharge', 'export'] or override in ['force_discharge', 'force_export'] or tariff == 'peak' %}
-            {{ [60, limit] | min }}
+          {# NAJWYŻSZY PRIORYTET: jutro bardzo drogie RCE lub bardzo dobry spread dziś #}
+          {% if tomorrow_sell == 'very_high' or spread > 0.25 %}
+            {{ [95, limit] | min }}     # ładujemy prawie do pełna – sprzedamy drogo
+
+          {% elif spread > 0.15 or tomorrow_sell == 'high' %}
+            {{ [85, limit] | min }}
+
+          {% elif spread < -0.15 %}
+            {{ [50, limit] | min }}     # nie ładujemy drogo
+
           {% else %}
-            {{ [95, limit] | min }}
+            {{ [75, limit] | min }}
           {% endif %}
