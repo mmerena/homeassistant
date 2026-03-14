@@ -1,0 +1,93 @@
+title: EMS – Weryfikacja Jednostek & Decyzji
+path: ems-verification
+icon: mdi:shield-check
+cards:
+
+  - type: markdown
+    content: |
+      ## 🔥 EMS VERIFICATION DASHBOARD
+      Sprawdź czy sensory mają **poprawne jednostki** przed decyzjami.
+      Żółte = wymaga uwagi | Czerwone = prawie na pewno błąd skalowania.
+
+  # ==================== BATTERIA & POJEMNOŚĆ ====================
+  - type: entities
+    title: 1. Bateria & Pojemność (najważniejsze!)
+    entities:
+      - entity: sensor.ems_battery_capacity_real
+        name: Pojemność rzeczywista (BMS1 + BMS2)
+      - entity: sensor.foxess_37635_bms1_design_energy
+        name: BMS1 Design Energy RAW (Wh)
+      - entity: sensor.foxess_38333_bms2_design_energy
+        name: BMS2 Design Energy RAW (Wh)
+      - entity: sensor.battery_soc
+        name: SOC baterii (%)
+      - entity: sensor.ems_battery_stored_energy
+        name: Energia przechowywana (kWh)
+      - entity: sensor.ems_planned_battery_soc
+        name: Planowany SOC (%)
+      - entity: sensor.ems_dynamic_max_soc
+        name: Dynamic Max SOC (%)
+
+  # ==================== CENY & PROFIT ====================
+  - type: entities
+    title: 2. Ceny & Zysk (arbitraż RCE)
+    entities:
+      - entity: sensor.ems_export_price
+        name: Export Price RCE (PLN/kWh)
+      - entity: sensor.ems_import_price
+        name: Import Price (taryfa dostawcy)
+      - entity: sensor.ems_profit_spread
+        name: Profit Spread (PLN/kWh)
+      - entity: sensor.ems_profit_decision
+        name: Profit Decision
+      - entity: sensor.ems_arbitrage_opportunity
+        name: Arbitrage Opportunity
+      - entity: sensor.ems_tomorrow_sell_opportunity
+        name: Tomorrow RCE Sell Opportunity
+
+  # ==================== MOC & PRZEPŁYWY ====================
+  - type: entities
+    title: 3. Moc & Przepływy energii
+    entities:
+      - entity: sensor.ems_pv_power
+        name: PV Power (kW)
+      - entity: sensor.ems_battery_power
+        name: Battery Power (W) – >0 ładuje, <0 rozładowuje
+      - entity: sensor.ems_grid_power
+        name: Grid Power (W) – >0 import, <0 eksport
+      - entity: sensor.ems_pv_to_grid
+        name: PV → Grid (W)
+      - entity: sensor.ems_battery_to_grid
+        name: Battery → Grid (W)
+      - entity: sensor.ems_export_potential
+        name: Export Potential (W)
+
+  # ==================== DECYZJE & STRATEGIA ====================
+  - type: entities
+    title: 4. Decyzje sterujące
+    entities:
+      - entity: sensor.ems_energy_strategy
+        name: EMS Energy Strategy
+      - entity: sensor.ems_foxess_mode
+        name: FoxESS Mode (1=self-use, 2=export, 6=charge, 7=discharge)
+      - entity: sensor.ems_optimizer_decision
+        name: Optimizer Decision
+      - entity: sensor.ems_target_battery_soc
+        name: Target Battery SOC (%)
+      - entity: sensor.ems_battery_power_target
+        name: Battery Power Target (W)
+
+  # ==================== PODSUMOWANIE ====================
+  - type: markdown
+    content: |
+      **Jak używać tego dashboardu:**
+      - Porównaj **RAW wartości z Modbus** z tym, co powinno być.
+      - Jeśli `ems_battery_capacity_real` pokazuje ~32.6 kWh → OK.
+      - Jeśli `ems_battery_power` pokazuje 3261 zamiast ~326 W → błąd skalowania.
+      - Jeśli `ems_profit_spread` jest ujemny przy wysokim RCE → błąd ceny.
+
+      **Zielone** = wygląda dobrze  
+      **Żółte** = sprawdź skalę  
+      **Czerwone** = prawie na pewno błąd (np. Wh zamiast kWh)
+
+      Po sprawdzeniu każdej pozycji napisz mi wartość sensora, a ja powiem Ci czy jest prawidłowa.
