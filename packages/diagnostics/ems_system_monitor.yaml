@@ -69,7 +69,7 @@ template:
 
 
 # ------------------------------------------------
-# EMS BATTERY PLAN
+# EMS BATTERY PLAN (używa nowego planned SOC)
 # ------------------------------------------------
 
       - name: EMS Battery Plan
@@ -77,7 +77,7 @@ template:
         icon: mdi:battery-clock
 
         state: >
-          {{ states('sensor.ems_planned_battery_soc') }}
+          {{ states('sensor.ems_planned_battery_soc') }}%
 
 
 # ------------------------------------------------
@@ -93,7 +93,7 @@ template:
 
 
 # ------------------------------------------------
-# EMS EXPORT PRICE
+# EMS EXPORT PRICE MONITOR
 # ------------------------------------------------
 
       - name: EMS Export Price Monitor
@@ -106,7 +106,31 @@ template:
 
 
 # ------------------------------------------------
-# EMS SUMMARY (z adaptive)
+# NOWOŚĆ v2.1: EMS TOMORROW RCE
+# ------------------------------------------------
+
+      - name: EMS Tomorrow RCE
+        unique_id: ems_tomorrow_rce_monitor
+        icon: mdi:clock-future
+
+        state: >
+          {{ states('sensor.ems_tomorrow_sell_opportunity') | default('normal') }}
+
+
+# ------------------------------------------------
+# NOWOŚĆ v2.1: EMS STRATEGY STABILITY
+# ------------------------------------------------
+
+      - name: EMS Strategy Stability
+        unique_id: ems_strategy_stability_monitor
+        icon: mdi:chart-timeline-variant
+
+        state: >
+          {{ states('sensor.ems_strategy_stability') }}
+
+
+# ------------------------------------------------
+# EMS SUMMARY v2.1 (super rozbudowane)
 # ------------------------------------------------
 
       - name: EMS Summary
@@ -120,13 +144,17 @@ template:
           {% set tariff = states('sensor.energy_tariff_supplier') %}
           {% set export = states('sensor.ems_export_price') | float(0) %}
           {% set soc = states('sensor.battery_soc') %}
-          {% set adaptive_status = states('sensor.ems_adaptive_forecast_status') %}
+          {% set tomorrow = states('sensor.ems_tomorrow_sell_opportunity') | default('normal') %}
+          {% set dynamic_max = states('sensor.ems_dynamic_max_soc') %}
+          {% set stability = states('sensor.ems_strategy_stability') %}
           {% set pv_adapt = states('sensor.ems_adaptive_pv_forecast') | float(0) %}
 
           {{ strategy
-             ~ " | optimizer:" ~ optimizer
+             ~ " | opt:" ~ optimizer
              ~ " | tariff:" ~ tariff
-             ~ " | export:" ~ export
-             ~ " | soc:" ~ soc
-             ~ " | adaptive:" ~ adaptive_status
+             ~ " | export:" ~ export ~ "zł"
+             ~ " | SOC:" ~ soc ~ "%"
+             ~ " | max:" ~ dynamic_max ~ "%"
+             ~ " | tomorrow:" ~ tomorrow
+             ~ " | stability:" ~ stability
              ~ " | PV:" ~ pv_adapt ~ "kWh" }}
