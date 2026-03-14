@@ -3,21 +3,31 @@ template:
   - sensor:
       - name: rce_current_quarter_price
         unit_of_measurement: PLN/kWh
+        device_class: monetary
+        state_class: measurement
+        icon: mdi:currency-pln
+
         state: >
           {% set q = state_attr('sensor.rce_prices_today','quarters') | from_json %}
           {% set minute = (now().minute // 15) * 15 %}
           {% set key = "%02d:%02d"|format(now().hour, minute) %}
-          {{ q[key] }}
+          {{ q[key] | float(0) }}
 
   - sensor:
       - name: rce_current_hour_price
         unit_of_measurement: PLN/kWh
+        device_class: monetary
+        state_class: measurement
+        icon: mdi:currency-pln
+
         state: >
           {% set h = state_attr('sensor.rce_prices_today','hours') | from_json %}
-          {{ h["%02d"|format(now().hour)] }}
+          {{ h["%02d"|format(now().hour)] | float(0) }}
 
   - sensor:
       - name: rce_current_hour_rank
+        icon: mdi:ranking
+
         state: >
           {% set h = state_attr('sensor.rce_prices_today','hours') | from_json %}
           {% set values = h.values() | map('float') | list %}
@@ -26,6 +36,8 @@ template:
 
   - sensor:
       - name: rce_cheapest_hours_today
+        icon: mdi:arrow-down-bold
+
         state: >
           {% set h = state_attr('sensor.rce_prices_today','hours') | from_json %}
           {% set sorted = h | dictsort(by='value') %}
@@ -33,6 +45,8 @@ template:
 
   - sensor:
       - name: rce_expensive_hours_today
+        icon: mdi:arrow-up-bold
+
         state: >
           {% set h = state_attr('sensor.rce_prices_today','hours') | from_json %}
           {% set sorted = h | dictsort(by='value', reverse=true) %}
@@ -40,6 +54,8 @@ template:
 
   - sensor:
       - name: rce_cheapest_hours_tomorrow
+        icon: mdi:arrow-down-bold
+
         state: >
           {% set h = state_attr('sensor.rce_prices_tomorrow','hours') | from_json %}
           {% set sorted = h | dictsort(by='value') %}
@@ -47,6 +63,8 @@ template:
 
   - sensor:
       - name: rce_expensive_hours_tomorrow
+        icon: mdi:arrow-up-bold
+
         state: >
           {% set h = state_attr('sensor.rce_prices_tomorrow','hours') | from_json %}
           {% set sorted = h | dictsort(by='value', reverse=true) %}
