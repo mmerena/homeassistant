@@ -3,7 +3,29 @@ template:
   - sensor:
 
 # ------------------------------------------------
-# BATTERY CAPACITY
+# EMS BATTERY CAPACITY REAL (automatyczna z Modbus BMS1 + BMS2)
+# ------------------------------------------------
+
+      - name: EMS Battery Capacity Real
+        unique_id: ems_battery_capacity_real
+        unit_of_measurement: kWh
+        device_class: energy
+        state_class: measurement
+        icon: mdi:battery
+
+        state: >
+          {% set bms1 = states('sensor.foxess_37635_bms1_design_energy') | float(0) %}
+          {% set bms2 = states('sensor.foxess_38333_bms2_design_energy') | float(0) %}
+          {{ ((bms1 + bms2) / 1000) | round(2) }}
+
+        attributes:
+          bms1_kwh: "{{ (states('sensor.foxess_37635_bms1_design_energy') | float(0) / 1000) | round(2) }}"
+          bms2_kwh: "{{ (states('sensor.foxess_38333_bms2_design_energy') | float(0) / 1000) | round(2) }}"
+          total_wh: "{{ states('sensor.foxess_37635_bms1_design_energy') | float(0) + states('sensor.foxess_38333_bms2_design_energy') | float(0) }}"
+          source: "Modbus BMS Design Energy"
+
+# ------------------------------------------------
+# BATTERY CAPACITY (używa realnej wartości z BMS)
 # ------------------------------------------------
 
       - name: EMS Battery Capacity
@@ -12,7 +34,7 @@ template:
         icon: mdi:battery
 
         state: >
-          {{ states('input_number.battery_capacity_kwh') | float(10) }}
+          {{ states('sensor.ems_battery_capacity_real') | float(30) }}
 
 
 # ------------------------------------------------
@@ -27,7 +49,7 @@ template:
         state: >
 
           {% set soc = states('sensor.battery_soc') | float(0) %}
-          {% set cap = states('sensor.ems_battery_capacity') | float(10) %}
+          {% set cap = states('sensor.ems_battery_capacity') | float(30) %}
 
           {{ (soc / 100 * cap) | round(2) }}
 
@@ -56,7 +78,7 @@ template:
 
 
 # ------------------------------------------------
-# PLANNED BATTERY RESERVE
+# PLANNED BATTERY RESERVE v2.1 (z boostem na jutrzejszy RCE)
 # ------------------------------------------------
 
       - name: EMS Planned Battery Reserve
@@ -67,12 +89,18 @@ template:
         state: >
 
           {% set required = states('sensor.ems_required_energy_today') | float(0) %}
-          {% set cap = states('sensor.ems_battery_capacity') | float(10) %}
+          {% set cap = states('sensor.ems_battery_capacity') | float(30) %}
+          {% set tomorrow_sell = states('sensor.ems_tomorrow_sell_opportunity') | default('normal') %}
 
-          {% if required > cap %}
-            {{ cap | round(2) }}
+          {% set buffer = 10 if tomorrow_sell == 'very_high' else 5 if tomorrow_sell == 'high' else 4 %}
+
+          {% set total_reserve = required + buffer %}
+
+          {# Nie przekraczamy 90% pojemności (ochrona baterii) #}
+          {% if total_reserve > (cap * 0.9) %}
+            {{ (cap * 0.9) | round(2) }}
           {% else %}
-            {{ required | round(2) }}
+            {{ total_reserve | round(2) }}
           {% endif %}
 
 
@@ -88,7 +116,7 @@ template:
         state: >
 
           {% set reserve = states('sensor.ems_planned_battery_reserve') | float(0) %}
-          {% set cap = states('sensor.ems_battery_capacity') | float(10) %}
+          {% set cap = states('sensor.ems_battery_capacity') | float(30) %}
 
           {% if cap > 0 %}
             {{ ((reserve / cap) * 100) | round(0) }}
