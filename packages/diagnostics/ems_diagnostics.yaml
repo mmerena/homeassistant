@@ -50,7 +50,7 @@ template:
 
 
 # ------------------------------------------------
-# EMS STRATEGY STABILITY
+# EMS STRATEGY STABILITY v2.1 (nowy scoring 0-5)
 # ------------------------------------------------
 
       - name: EMS Strategy Stability
@@ -58,12 +58,16 @@ template:
         icon: mdi:chart-timeline-variant
 
         state: >
-          {% set stability = states('sensor.ems_strategy_stability_score') | float(0) %}
+          {% set score = states('sensor.ems_strategy_stability_score') | float(0) %}
 
-          {% if stability < 2 %}
-            unstable
-          {% else %}
+          {% if score >= 4 %}
+            very_stable
+          {% elif score >= 3 %}
             stable
+          {% elif score >= 2 %}
+            moderate
+          {% else %}
+            unstable
           {% endif %}
 
 
@@ -77,16 +81,19 @@ template:
 
         state: >
           {% set profit = states('sensor.ems_profit_decision') %}
+          {% set spread = states('sensor.ems_profit_spread') | float(0) %}
 
-          {% if profit == 'sell' %}
+          {% if profit == 'sell' and spread > 0.15 %}
             profitable
+          {% elif profit == 'sell' %}
+            potentially_profitable
           {% else %}
             neutral
           {% endif %}
 
 
 # ------------------------------------------------
-# NOWOŚĆ: ADAPTIVE FORECAST STATUS
+# EMS ADAPTIVE FORECAST STATUS
 # ------------------------------------------------
 
       - name: EMS Adaptive Forecast Status
@@ -108,7 +115,19 @@ template:
 
 
 # ------------------------------------------------
-# EMS SYSTEM HEALTH (ulepszone)
+# EMS TOMORROW RCE STATUS (NOWY SENSOR v2.1)
+# ------------------------------------------------
+
+      - name: EMS Tomorrow RCE Status
+        unique_id: ems_tomorrow_rce_status
+        icon: mdi:clock-future
+
+        state: >
+          {{ states('sensor.ems_tomorrow_sell_opportunity') | default('normal') }}
+
+
+# ------------------------------------------------
+# EMS SYSTEM HEALTH v2.1 (ulepszony – sprawdza WSZYSTKO)
 # ------------------------------------------------
 
       - name: EMS System Health
@@ -120,11 +139,13 @@ template:
           {% set balance = states('sensor.ems_energy_balance_check') %}
           {% set stability = states('sensor.ems_strategy_stability') %}
           {% set adaptive = states('sensor.ems_adaptive_forecast_status') %}
+          {% set tomorrow = states('sensor.ems_tomorrow_sell_opportunity') | default('normal') %}
 
           {% if sensors == 'ok'
                 and balance == 'ok'
-                and stability == 'stable'
-                and adaptive in ['stable','learning'] %}
+                and stability in ['very_stable','stable']
+                and adaptive in ['stable','learning']
+                and tomorrow != 'unknown' %}
             healthy
 
           {% elif sensors == 'error' %}
@@ -132,6 +153,9 @@ template:
 
           {% elif balance == 'warning' %}
             energy_mismatch
+
+          {% elif stability == 'unstable' %}
+            strategy_unstable
 
           {% else %}
             degraded
