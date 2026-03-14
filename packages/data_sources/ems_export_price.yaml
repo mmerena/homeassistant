@@ -3,12 +3,14 @@ template:
   - sensor:
 
 # ------------------------------------------------
-# EXPORT ENERGY PRICE
+# EXPORT ENERGY PRICE v2.1-fix (monetary)
 # ------------------------------------------------
 
       - name: EMS Export Price
         unique_id: ems_export_price
         unit_of_measurement: PLN/kWh
+        device_class: monetary
+        state_class: measurement
         icon: mdi:cash
 
         state: >
@@ -22,23 +24,37 @@ template:
       - name: EMS Export Price Level
         unique_id: ems_export_price_level
         icon: mdi:finance
+        device_class: enum
 
         state: >
-
           {% set price = states('sensor.ems_export_price') | float(0) %}
 
           {% if price > 1.00 %}
             very_high
-
-          {% elif price > 0.70 %}
+          {% elif price > 0.80 %}
             high
-
-          {% elif price > 0.40 %}
+          {% elif price > 0.50 %}
             medium
-
-          {% elif price > 0.20 %}
+          {% elif price > 0.30 %}
             low
-
           {% else %}
             very_low
           {% endif %}
+
+
+# ------------------------------------------------
+# EMS ENERGY SPREAD
+# ------------------------------------------------
+
+      - name: EMS Energy Spread
+        unique_id: ems_energy_spread
+        unit_of_measurement: PLN/kWh
+        device_class: monetary
+        state_class: measurement
+        icon: mdi:arrow-split-vertical
+
+        state: >
+          {% set sell = states('sensor.ems_export_price') | float(0) %}
+          {% set buy = states('sensor.ems_import_price') | float(0) %}
+
+          {{ (sell - buy) | round(3) }}
