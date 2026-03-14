@@ -12,8 +12,8 @@ template:
         icon: mdi:solar-power
 
         state: >
-          {% set pv = states('sensor.pv_power') | float(0) %}
-          {% set load = states('sensor.load_power') | float(0) %}
+          {% set pv = states('sensor.ems_pv_power') | float(0) %}
+          {% set load = states('sensor.ems_load_power') | float(0) %}
           {{ [pv, load] | min | round(0) }}
 
 
@@ -28,7 +28,7 @@ template:
 
         state: >
 
-          {% set battery = states('sensor.battery_power') | float(0) %}
+          {% set battery = states('sensor.ems_battery_power') | float(0) %}
 
           {% if battery > 0 %}
             {{ battery | round(0) }}
@@ -48,7 +48,7 @@ template:
 
         state: >
 
-          {% set battery = states('sensor.battery_power') | float(0) %}
+          {% set battery = states('sensor.ems_battery_power') | float(0) %}
 
           {% if battery < 0 %}
             {{ (battery * -1) | round(0) }}
@@ -68,7 +68,7 @@ template:
 
         state: >
 
-          {% set grid = states('sensor.grid_power') | float(0) %}
+          {% set grid = states('sensor.ems_grid_power') | float(0) %}
 
           {% if grid < 0 %}
             {{ (grid * -1) | round(0) }}
@@ -88,7 +88,7 @@ template:
 
         state: >
 
-          {% set grid = states('sensor.grid_power') | float(0) %}
+          {% set grid = states('sensor.ems_grid_power') | float(0) %}
 
           {% if grid > 0 %}
             {{ grid | round(0) }}
@@ -98,7 +98,43 @@ template:
 
 
 # ------------------------------------------------
-# ENERGY BALANCE
+# NOWOŚĆ v2.1: BATTERY → GRID (ile baterii sprzedajemy)
+# ------------------------------------------------
+
+      - name: EMS Battery To Grid
+        unique_id: ems_battery_to_grid
+        unit_of_measurement: W
+        icon: mdi:battery-arrow-up
+
+        state: >
+          {% set battery = states('sensor.ems_battery_power') | float(0) %}
+          {% set grid = states('sensor.ems_grid_power') | float(0) %}
+
+          {% if battery < 0 and grid < -100 %}
+            {{ (battery * -1) | round(0) }}
+          {% else %}
+            0
+          {% endif %}
+
+
+# ------------------------------------------------
+# NOWOŚĆ v2.1: SELF CONSUMPTION (PV + Battery → Load)
+# ------------------------------------------------
+
+      - name: EMS Self Consumption
+        unique_id: ems_self_consumption
+        unit_of_measurement: W
+        icon: mdi:home-assistant
+
+        state: >
+          {% set pv_to_load = states('sensor.ems_pv_to_load') | float(0) %}
+          {% set battery_to_load = states('sensor.ems_battery_to_load') | float(0) %}
+
+          {{ (pv_to_load + battery_to_load) | round(0) }}
+
+
+# ------------------------------------------------
+# ENERGY BALANCE v2.1
 # ------------------------------------------------
 
       - name: EMS Energy Balance
@@ -108,9 +144,9 @@ template:
 
         state: >
 
-          {% set pv = states('sensor.pv_power') | float(0) %}
-          {% set load = states('sensor.load_power') | float(0) %}
-          {% set grid = states('sensor.grid_power') | float(0) %}
-          {% set battery = states('sensor.battery_power') | float(0) %}
+          {% set pv = states('sensor.ems_pv_power') | float(0) %}
+          {% set load = states('sensor.ems_load_power') | float(0) %}
+          {% set grid = states('sensor.ems_grid_power') | float(0) %}
+          {% set battery = states('sensor.ems_battery_power') | float(0) %}
 
           {{ (pv + grid + battery - load) | round(0) }}
