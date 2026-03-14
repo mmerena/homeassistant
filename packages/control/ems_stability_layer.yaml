@@ -46,7 +46,7 @@ template:
 
 
 # ------------------------------------------------
-# STRATEGY STABILITY SCORE
+# STRATEGY STABILITY SCORE v2.1 (lepszy zakres 0-5)
 # ------------------------------------------------
 
       - name: EMS Strategy Stability Score
@@ -56,19 +56,23 @@ template:
         state: >
 
           {% set hysteresis = states('sensor.ems_strategy_hysteresis') %}
+          {% set soc_delta = (states('sensor.battery_soc') | float(0) - states('sensor.ems_planned_battery_soc') | float(0)) | abs %}
 
-          {% if hysteresis == 'stable' %}
+          {% if hysteresis == 'stable' and soc_delta < 8 %}
+            5
+          {% elif hysteresis == 'stable' %}
+            4
+          {% elif soc_delta < 8 %}
             3
           {% else %}
             1
           {% endif %}
 
 
-
 automation:
 
 # ------------------------------------------------
-# STRATEGY COOLDOWN
+# STRATEGY COOLDOWN v2.1 (30 min + inteligentne skracanie)
 # ------------------------------------------------
 
   - alias: EMS Strategy Stability Control
@@ -84,11 +88,16 @@ automation:
         value_template: >
 
           {% set last = states('input_datetime.ems_last_mode_change') %}
+          {% set tomorrow = states('sensor.ems_tomorrow_sell_opportunity') | default('normal') %}
+          {% set soc_delta = (states('sensor.battery_soc') | float(0) - states('sensor.ems_planned_battery_soc') | float(0)) | abs %}
+
+          {# Skracamy cooldown przy bardzo ważnej zmianie na jutro #}
+          {% set cooldown_seconds = 600 if tomorrow == 'very_high' else 1800 %}
 
           {% if last in ['unknown','unavailable',''] %}
             true
           {% else %}
-            {{ (as_timestamp(now()) - as_timestamp(last)) > 600 }}
+            {{ (as_timestamp(now()) - as_timestamp(last)) > cooldown_seconds and soc_delta >= 8 }}
           {% endif %}
 
     action:
@@ -97,3 +106,8 @@ automation:
         data:
           entity_id: input_datetime.ems_last_mode_change
           datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+
+      - service: system_log.write
+        data:
+          level: info
+          message: "EMS Strategy changed after cooldown | tomorrow={{ states('sensor.ems_tomorrow_sell_opportunity') }} | delta_soc={{ (states('sensor.battery_soc')|float - states('sensor.ems_planned_battery_soc')|float)|round(1) }}%"
