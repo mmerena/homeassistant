@@ -1,0 +1,103 @@
+# ------------------------------------------------------------------------
+# PANELE SŁONECZNE – wymagane przez panel Energia
+# ------------------------------------------------------------------------
+- sensor:
+    - name: FoxESS PV Całkowita Energia
+      unique_id: foxess_pv_calkowita_kwh
+      state: "{{ states('sensor.foxess_39601_pv_total_energy') | float(0) | round(2) }}"
+      unit_of_measurement: kWh
+      device_class: energy
+      state_class: total_increasing
+
+    - name: FoxESS PV Produkcja Dzisiaj
+      unique_id: foxess_pv_dzisiaj_kwh
+      state: "{{ states('sensor.foxess_39603_total_pv_power_today') | float(0) | round(2) }}"
+      unit_of_measurement: kWh
+      device_class: energy
+      state_class: total_increasing
+
+    # Moc produkcji PV (chwilowa, wymagana do panelu)
+    - name: FoxESS Moc Produkcji Fotowoltaiki
+      unique_id: foxess_pv_moc_produkcji
+      state: "{{ states('sensor.foxess_39118_total_pv_input_power') | float(0) | round(0) }}"
+      unit_of_measurement: W
+      device_class: power
+      state_class: measurement
+
+# ------------------------------------------------------------------------
+# DOMOWY MAGAZYN ENERGII – wymagane przez panel Energia
+# ------------------------------------------------------------------------
+- sensor:
+    - name: FoxESS Bateria Ładowanie Całkowite
+      unique_id: foxess_bateria_ladowanie_calkowite_kwh
+      state: "{{ states('sensor.foxess_39605_total_charging_capacity') | float(0) | round(2) }}"
+      unit_of_measurement: kWh
+      device_class: energy
+      state_class: total_increasing
+
+    - name: FoxESS Bateria Rozładowanie Całkowite
+      unique_id: foxess_bateria_rozladowanie_calkowite_kwh
+      state: "{{ states('sensor.foxess_39609_total_discharge_energy') | float(0) | round(2) }}"
+      unit_of_measurement: kWh
+      device_class: energy
+      state_class: total_increasing
+
+    - name: FoxESS Bateria Stan Naładowania
+      unique_id: foxess_bateria_soc
+      state: "{{ states('sensor.foxess_37612_bms1_soc') | float(0) }}"
+      unit_of_measurement: "%"
+      device_class: battery
+      state_class: measurement
+
+    - name: FoxESS Bateria Moc Łączna
+      unique_id: foxess_bateria_moc_laczna
+      state: "{{ states('sensor.foxess_39237_battery_combined_power') | float(0) | round(0) }}"
+      unit_of_measurement: W
+      device_class: power
+      state_class: measurement
+
+    - name: FoxESS Bateria Moc Ładowania
+      unique_id: foxess_bateria_ladowanie_moc
+      state: "{{ max(0, states('sensor.foxess_39237_battery_combined_power') | float(0)) | round(0) }}"
+      unit_of_measurement: W
+      device_class: power
+      state_class: measurement
+
+    - name: FoxESS Bateria Moc Rozładowania
+      unique_id: foxess_bateria_rozladowanie_moc
+      state: "{{ max(0, states('sensor.foxess_39237_battery_combined_power') | float(0) * -1) | round(0) }}"
+      unit_of_measurement: W
+      device_class: power
+      state_class: measurement
+
+# ------------------------------------------------------------------------
+# SIEĆ ELEKTRYCZNA – import, eksport, moc chwilowa
+# ------------------------------------------------------------------------
+- sensor:
+    - name: FoxESS Import z Sieci Całkowity
+      unique_id: foxess_import_calkowity_kwh
+      state: "{{ states('sensor.foxess_39617_total_power_taken') | float(0) | round(2) }}"
+      unit_of_measurement: kWh
+      device_class: energy
+      state_class: total_increasing
+
+    - name: FoxESS Energia Zwrócona do Sieci (Eksport Całkowity)
+      unique_id: foxess_eksport_calkowity_kwh
+      state: "{{ states('sensor.foxess_39613_total_feeder_network_energy') | float(0) | round(2) }}"
+      unit_of_measurement: kWh
+      device_class: energy
+      state_class: total_increasing
+
+    - name: FoxESS Moc Pobrana z Sieci
+      unique_id: foxess_moc_pobrana_sieci
+      state: "{{ max(0, states('sensor.foxess_39168_meter_active_power') | float(0) * -1) | round(0) }}"
+      unit_of_measurement: W
+      device_class: power
+      state_class: measurement
+
+    - name: FoxESS Moc Oddawana do Sieci
+      unique_id: foxess_moc_oddawana_sieci
+      state: "{{ max(0, states('sensor.foxess_39168_meter_active_power') | float(0)) | round(0) }}"
+      unit_of_measurement: W
+      device_class: power
+      state_class: measurement
