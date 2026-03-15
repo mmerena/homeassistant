@@ -14,8 +14,8 @@ template:
         icon: mdi:solar-power
 
         state: >
-          {% set pv = states('sensor.ems_pv_power') | float(0) %}
-          {% set load = states('sensor.ems_load_power') | float(0) %}
+          {% set pv = states('sensor.ems_pv_power') | default('0') | float(0) %}  {# Fallback na '0' jeśli unavailable #}
+          {% set load = states('sensor.ems_load_power') | default('0') | float(0) %}
 
           {{ (pv - load) | round(0) }}
 
@@ -29,15 +29,15 @@ template:
         icon: mdi:solar-power-variant
 
         state: >
-          {% set surplus = states('sensor.ems_pv_surplus') | float(0) %}
+          {% set surplus = states('sensor.ems_pv_surplus') | default('0') | float(0) %}
 
-          {% if surplus > 6000 %}
+          {% if surplus > states('input_number.pv_surplus_very_high_threshold') | float(6000) %}
             very_high
-          {% elif surplus > 3000 %}
+          {% elif surplus > states('input_number.pv_surplus_high_threshold') | float(3000) %}
             high
-          {% elif surplus > 1000 %}
+          {% elif surplus > states('input_number.pv_surplus_medium_threshold') | float(1000) %}
             medium
-          {% elif surplus > 200 %}
+          {% elif surplus > states('input_number.pv_surplus_low_threshold') | float(200) %}
             low
           {% else %}
             none
@@ -53,13 +53,13 @@ template:
         icon: mdi:battery
 
         state: >
-          {% set soc = states('sensor.battery_soc') | float(0) %}
+          {% set soc = states('sensor.ems_battery_soc') | default('50') | float(0) %}  {# Fallback na 50% #}
 
-          {% if soc < 15 %}
+          {% if soc < states('input_number.battery_critical_threshold') | float(15) %}
             critical
-          {% elif soc < 35 %}
+          {% elif soc < states('input_number.battery_low_threshold') | float(35) %}
             low
-          {% elif soc < 75 %}
+          {% elif soc < states('input_number.battery_normal_threshold') | float(75) %}
             normal
           {% else %}
             full
@@ -75,11 +75,11 @@ template:
         icon: mdi:transmission-tower
 
         state: >
-          {% set grid = states('sensor.ems_grid_power') | float(0) %}
+          {% set grid = states('sensor.ems_grid_power') | default('0') | float(0) %}
 
-          {% if grid > 300 %}
+          {% if grid > states('input_number.grid_import_threshold') | float(300) %}
             import
-          {% elif grid < -300 %}
+          {% elif grid < - states('input_number.grid_export_threshold') | float(300) %}
             export
           {% else %}
             neutral
@@ -98,10 +98,10 @@ template:
         icon: mdi:scale-balance
 
         state: >
-          {% set pv = states('sensor.ems_pv_power') | float(0) %}
-          {% set grid = states('sensor.ems_grid_power') | float(0) %}
-          {% set battery = states('sensor.ems_battery_power') | float(0) %}
-          {% set load = states('sensor.ems_load_power') | float(0) %}
+          {% set pv = states('sensor.ems_pv_power') | default('0') | float(0) %}
+          {% set grid = states('sensor.ems_grid_power') | default('0') | float(0) %}
+          {% set battery = states('sensor.ems_battery_power') | default('0') | float(0) %}
+          {% set load = states('sensor.ems_load_power') | default('0') | float(0) %}
 
           {{ (pv + grid + battery - load) | round(0) }}
 
@@ -118,7 +118,7 @@ template:
         icon: mdi:transmission-tower-export
 
         state: >
-          {% set pv_surplus = states('sensor.ems_pv_surplus') | float(0) %}
+          {% set pv_surplus = states('sensor.ems_pv_surplus') | default('0') | float(0) %}
           {% set battery_to_grid = states('sensor.ems_battery_to_grid') | default(0) | float(0) %}
           {% set total = pv_surplus + battery_to_grid %}
 
