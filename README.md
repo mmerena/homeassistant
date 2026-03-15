@@ -2,7 +2,7 @@
 
 ## Wstęp
 
-System EMS (Energy Management System) to zaawansowane rozwiązanie do zarządzania energią w środowisku Home Assistant. Jest zaprojektowany do sterowania falownikiem FoxESS P3-10.0-SH z magazynem energii EQ4800 o pojemności 32 kWh. System podejmuje decyzje o trybie pracy (ładowanie, rozładowywanie, eksport) na podstawie cen sprzedaży energii RCE (Renewable Energy Certificates) oraz cen zakupu w taryfie dostawcy energii.
+System EMS (Energy Management System) to zaawansowane rozwiązanie do zarządzania energią w środowisku Home Assistant. Jest zaprojektowany do sterowania falownikiem FoxESS P3-10.0-SH z magazynem energii EQ4800 o pojemności 30 kWh. System podejmuje decyzje o trybie pracy (ładowanie, rozładowywanie, eksport) na podstawie cen sprzedaży energii RCE (Rynkowa Cena Energii) oraz cen zakupu w taryfie dostawcy energii.
 
 Główne funkcje:
 - Adaptacyjne prognozowanie produkcji PV i zużycia obciążenia.
@@ -18,9 +18,8 @@ System składa się z plików YAML definiujących sensory, inputy, automatyzacje
 - Home Assistant (wersja core-2023.1 lub nowsza zalecana).
 - Integracja Modbus TCP dla falownika FoxESS.
 - Sensory zewnętrzne:
-  - SQL: `rce_prices_today`, `rce_prices_tomorrow`, `tariff_supplier` (dostarczają ceny RCE i taryfy).
-  - Modbus: Sensory FoxESS (np. `foxess_39118_total_pv_input_power`, BMS1/BMS2).
-  - Inne: `pv_energy_today`, `load_energy_today`, `workday_sensor`.
+  - SQL: `rce_prices_today`, `rce_prices_tomorrow`, `tariff_supplier` (dostarczają ceny RCE i taryfę dostawcy).
+  - Modbus: Sensory FoxESS.
 - Pakiety HA: Template, Input Number/Boolean/Select/Text/Datetime.
 
 ## Instalacja
@@ -32,7 +31,7 @@ homeassistant:
 packages: !include_dir_named packages
 ```
 3. Zrestartuj Home Assistant.
-4. Skonfiguruj inputy w UI HA (np. `input_number.energy_export_price`).
+4. Skonfiguruj inputy w UI HA.
 
 Pliki systemu:
 - `ems_adaptive_learning.yaml`: Adaptacyjne prognozy PV i obciążenia.
@@ -62,7 +61,7 @@ Pliki systemu:
 - **Inputy**: Ustaw w UI HA, np. prognozy PV/load, progi arbitrażu, ceny taryf.
 - **Automatyzacje**:
 - `ems_foxess_controller`: Aktualizuje tryb falownika co zmianę stanu kluczowych sensorów.
-- Aktualizacje cen: Co 15 min dla RCE, co min dla taryfy.
+- Aktualizacje cen: Co 15 min dla RCE, co 1 min dla taryfy dostawcy.
 - **Symulacja**: Włącz `input_boolean.foxess_ems_simulation` do testów bez pisania do Modbus.
 
 ## Jak Działa
