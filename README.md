@@ -18,7 +18,7 @@ System składa się z plików YAML definiujących sensory, inputy, automatyzacje
 - Home Assistant (wersja core-2023.1 lub nowsza zalecana).
 - Integracja Modbus TCP dla falownika FoxESS.
 - Sensory zewnętrzne:
-  - SQL: `rce_prices_today`, `rce_prices_tomorrow`, `tariff_supplier` (dostarczają ceny RCE i taryfę dostawcy).
+  - SQL: `rce_prices_today`, `rce_prices_tomorrow`, `local_supplier_tariff` (dostarczają ceny RCE i taryfę dostawcy).
   - Modbus: Sensory FoxESS.
 - Pakiety HA: Template, Input Number/Boolean/Select/Text/Datetime.
 
