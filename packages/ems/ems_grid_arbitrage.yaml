@@ -13,8 +13,8 @@ template:
 
         state: >
 
-          {% set export_price = states('sensor.ems_export_price') | float(0) %}
-          {% set import_price = states('sensor.ems_import_price') | float(0) %}
+          {% set export_price = states('sensor.ems_export_price') | default('0') | float(0) %}
+          {% set import_price = states('sensor.ems_import_price') | default('0') | float(0) %}
           {{ (export_price - import_price) | round(3) }}
 
 
@@ -28,7 +28,7 @@ template:
 
         state: >
 
-          {% set margin = states('sensor.ems_arbitrage_margin') | float(0) %}
+          {% set margin = states('sensor.ems_arbitrage_margin') | default('0') | float(0) %}
           {% set threshold = states('input_number.arbitrage_threshold') | float(0.20) %}  {# <-- z helpers v2.1 #}
 
           {% if margin > threshold %}
@@ -45,9 +45,10 @@ template:
       - name: EMS Arbitrage Action
         unique_id: ems_arbitrage_action
         state: >
-          {% set spread = states('sensor.ems_profit_spread') | float(0) %}
-          {% set soc = states('sensor.battery_soc') | float(50) %}
+          {% set spread = states('sensor.ems_profit_spread') | default('0') | float(0) %}
+          {% set soc = states('sensor.ems_battery_soc') | default('50') | float(50) %}
           {% set tomorrow = states('sensor.ems_tomorrow_sell_opportunity') | default('normal') %}
+          {% set min_export = states('input_number.min_export_price') | float(0.30) %}  {# Nowe: min cena do export #}
 
           {# NAJWYŻSZY PRIORYTET: jutro bardzo drogie RCE #}
           {% if tomorrow == 'very_high' and soc > 35 %}
@@ -55,7 +56,7 @@ template:
           {% elif tomorrow == 'very_high' and soc < 75 %}
             charge
 
-          {% elif spread > 0.25 and soc > 35 %}
+          {% elif spread > 0.25 and soc > 35 and states('sensor.ems_export_price') | float(0) > min_export %}
             export
           {% elif spread > 0.15 and soc > 30 %}
             discharge
