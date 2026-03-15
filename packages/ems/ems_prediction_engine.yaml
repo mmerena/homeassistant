@@ -12,7 +12,7 @@ template:
         icon: mdi:solar-power
 
         state: >
-          {{ states('sensor.ems_adaptive_pv_forecast') | float(0) }}
+          {{ states('sensor.ems_adaptive_pv_forecast') | default('0') | float(0) }}
 
 
 # ------------------------------------------------
@@ -25,7 +25,7 @@ template:
         icon: mdi:home-lightning-bolt
 
         state: >
-          {{ states('sensor.ems_adaptive_load_forecast') | float(0) }}
+          {{ states('sensor.ems_adaptive_load_forecast') | default('0') | float(0) }}
 
 
 # ------------------------------------------------
@@ -39,8 +39,8 @@ template:
 
         state: >
 
-          {% set pv = states('sensor.ems_pv_forecast_energy_today') | float(0) %}
-          {% set load = states('sensor.ems_load_forecast_today') | float(0) %}
+          {% set pv = states('sensor.ems_pv_forecast_energy_today') | default('0') | float(0) %}
+          {% set load = states('sensor.ems_load_forecast_today') | default('0') | float(0) %}
 
           {{ (pv - load) | round(2) }}
 
@@ -56,7 +56,7 @@ template:
 
         state: >
 
-          {% set balance = states('sensor.ems_energy_balance_forecast') | float(0) %}
+          {% set balance = states('sensor.ems_energy_balance_forecast') | default('0') | float(0) %}
 
           {% if balance > 10 %}
             100
@@ -70,24 +70,6 @@ template:
 
 
 # ------------------------------------------------
-# TOMORROW OUTLOOK (używany w strategii)
-# ------------------------------------------------
-
-      - name: EMS Tomorrow Outlook
-        unique_id: ems_tomorrow_outlook
-        icon: mdi:clock-future
-
-        state: >
-          {% set expensive = states('sensor.rce_expensive_hours_tomorrow') | default('') %}
-          {% set count = expensive.split(',')|length if expensive else 0 %}
-          {% if count >= 2 %}
-            very_high
-          {% else %}
-            normal
-          {% endif %}
-
-
-# ------------------------------------------------
 # DYNAMIC MAX SOC (POPRAWIONA LOGIKA – NAJWAŻNIEJSZA ZMIANA!)
 # ------------------------------------------------
 
@@ -95,19 +77,18 @@ template:
         unique_id: ems_dynamic_max_soc
         unit_of_measurement: "%"
         state: >
-          {% set spread = states('sensor.ems_profit_spread') | float(0) %}
+          {% set spread = states('sensor.ems_profit_spread') | default('0') | float(0) %}
           {% set tomorrow_sell = states('sensor.ems_tomorrow_sell_opportunity') | default('normal') %}
           {% set limit = states('input_number.foxess_ems_max_soc') | int(98) %}
 
-          {# NAJWYŻSZY PRIORYTET: jutro bardzo drogie RCE lub bardzo dobry spread dziś #}
           {% if tomorrow_sell == 'very_high' or spread > 0.25 %}
-            {{ [95, limit] | min }}     # ładujemy prawie do pełna – sprzedamy drogo
+            {{ [95, limit] | min }}
 
           {% elif spread > 0.15 or tomorrow_sell == 'high' %}
             {{ [85, limit] | min }}
 
           {% elif spread < -0.15 %}
-            {{ [50, limit] | min }}     # nie ładujemy drogo
+            {{ [50, limit] | min }}
 
           {% else %}
             {{ [75, limit] | min }}
