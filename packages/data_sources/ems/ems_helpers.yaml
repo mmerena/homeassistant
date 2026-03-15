@@ -124,6 +124,86 @@ input_number:
     icon: mdi:clock-end
     initial: 21
 
+  pv_surplus_very_high_threshold:
+    name: PV Surplus Very High Threshold
+    min: 0
+    max: 10000
+    step: 100
+    unit_of_measurement: W
+    initial: 6000
+
+  pv_surplus_high_threshold:
+    name: PV Surplus High Threshold
+    min: 0
+    max: 10000
+    step: 100
+    unit_of_measurement: W
+    initial: 3000
+
+  pv_surplus_medium_threshold:
+    name: PV Surplus Medium Threshold
+    min: 0
+    max: 10000
+    step: 100
+    unit_of_measurement: W
+    initial: 1000
+
+  pv_surplus_low_threshold:
+    name: PV Surplus Low Threshold
+    min: 0
+    max: 10000
+    step: 100
+    unit_of_measurement: W
+    initial: 200
+
+  battery_critical_threshold:
+    name: Battery Critical Threshold
+    min: 0
+    max: 50
+    step: 1
+    unit_of_measurement: "%"
+    initial: 15
+
+  battery_low_threshold:
+    name: Battery Low Threshold
+    min: 0
+    max: 50
+    step: 1
+    unit_of_measurement: "%"
+    initial: 35
+
+  battery_normal_threshold:
+    name: Battery Normal Threshold
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+    initial: 75
+
+  grid_import_threshold:
+    name: Grid Import Threshold
+    min: 0
+    max: 1000
+    step: 50
+    unit_of_measurement: W
+    initial: 300
+
+  grid_export_threshold:
+    name: Grid Export Threshold
+    min: 0
+    max: 1000
+    step: 50
+    unit_of_measurement: W
+    initial: 300
+
+  min_export_price:
+    name: Min Export Price
+    min: 0
+    max: 2
+    step: 0.01
+    unit_of_measurement: PLN/kWh
+    initial: 0.30
+
 input_text:
 
   foxess_last_signature:
@@ -165,6 +245,7 @@ automation:
   # ------------------------------------------------
   # SYNC TARYFY Z BAZY SQL → INPUT HELPERS
   # ------------------------------------------------
+
   - alias: Sync Supplier Tariff Helpers
     id: ems_sync_tariff_from_sql
     mode: single
@@ -175,63 +256,63 @@ automation:
       - platform: time_pattern
         hours: "/1"
       - platform: state
-        entity_id: sensor.tariff_supplier
+        entity_id: sensor.local_supplier_tariff
 
     action:
       - choose:
           - conditions:
               - condition: template
-                value_template: "{{ states('sensor.tariff_supplier') not in ['unknown', 'unavailable', ''] }}"
+                value_template: "{{ states('sensor.local_supplier_tariff') not in ['unknown', 'unavailable', ''] }}"
             sequence:
               # Ceny
               - service: input_number.set_value
                 target:
                   entity_id: input_number.tariff_cheap_price
                 data:
-                  value: "{{ state_attr('sensor.tariff_supplier', 'cheap_price') | float(0.50) }}"
+                  value: "{{ state_attr('sensor.local_supplier_tariff', 'cheap_price') | float(0.50) }}"
 
               - service: input_number.set_value
                 target:
                   entity_id: input_number.tariff_normal_price
                 data:
-                  value: "{{ state_attr('sensor.tariff_supplier', 'normal_price') | float(0.80) }}"
+                  value: "{{ state_attr('sensor.local_supplier_tariff', 'normal_price') | float(0.80) }}"
 
               - service: input_number.set_value
                 target:
                   entity_id: input_number.tariff_peak_price
                 data:
-                  value: "{{ state_attr('sensor.tariff_supplier', 'peak_price') | float(1.20) }}"
+                  value: "{{ state_attr('sensor.local_supplier_tariff', 'peak_price') | float(1.20) }}"
 
               # Godziny
               - service: input_number.set_value
                 target:
                   entity_id: input_number.tariff_normal_start_hour
                 data:
-                  value: "{{ state_attr('sensor.tariff_supplier', 'normal_start_hour') | int(7) }}"
+                  value: "{{ state_attr('sensor.local_supplier_tariff', 'normal_start_hour') | int(7) }}"
 
               - service: input_number.set_value
                 target:
                   entity_id: input_number.tariff_normal_end_hour
                 data:
-                  value: "{{ state_attr('sensor.tariff_supplier', 'normal_end_hour') | int(13) }}"
+                  value: "{{ state_attr('sensor.local_supplier_tariff', 'normal_end_hour') | int(13) }}"
 
               - service: input_number.set_value
                 target:
                   entity_id: input_number.tariff_peak_start_hour
                 data:
-                  value: "{{ state_attr('sensor.tariff_supplier', 'peak_start_hour') | int(16) }}"
+                  value: "{{ state_attr('sensor.local_supplier_tariff', 'peak_start_hour') | int(16) }}"
 
               - service: input_number.set_value
                 target:
                   entity_id: input_number.tariff_peak_end_hour
                 data:
-                  value: "{{ state_attr('sensor.tariff_supplier', 'peak_end_hour') | int(21) }}"
+                  value: "{{ state_attr('sensor.local_supplier_tariff', 'peak_end_hour') | int(21) }}"
 
               # Flagi weekend / święta
               - choose:
                   - conditions:
                       - condition: template
-                        value_template: "{{ state_attr('sensor.tariff_supplier', 'weekend_cheap') | int(0) == 1 }}"
+                        value_template: "{{ state_attr('sensor.local_supplier_tariff', 'weekend_cheap') | int(0) == 1 }}"
                     sequence:
                       - service: input_boolean.turn_on
                         target:
@@ -244,7 +325,7 @@ automation:
               - choose:
                   - conditions:
                       - condition: template
-                        value_template: "{{ state_attr('sensor.tariff_supplier', 'holiday_cheap') | int(0) == 1 }}"
+                        value_template: "{{ state_attr('sensor.local_supplier_tariff', 'holiday_cheap') | int(0) == 1 }}"
                     sequence:
                       - service: input_boolean.turn_on
                         target:
@@ -255,9 +336,33 @@ automation:
                           entity_id: input_boolean.tariff_holiday_cheap
 
   # ------------------------------------------------
-  # UPDATE EXPORT PRICE EVERY QUARTER
+  # NOWOŚĆ: UPDATE PV FORECAST FROM FORECAST.SOLAR
   # ------------------------------------------------
-  - alias: Update export price every quarter
+
+  - alias: Update PV Forecast from Forecast.Solar
+    id: ems_update_pv_forecast
+    mode: single
+    trigger:
+      - platform: time_pattern
+        minutes: "/5"
+    condition:
+      - condition: numeric_state
+        entity_id: sensor.forecast_solar_energy_production_today  {# Zakładam nazwę sensora z integracji #}
+        above: 0
+    action:
+      - service: input_number.set_value
+        target:
+          entity_id: input_number.pv_forecast_today
+        data:
+          value: "{{ states('sensor.forecast_solar_energy_production_today') | float(0) }}"
+
+  # ------------------------------------------------
+  # SYNC EXPORT QUARTER PRICE
+  # ------------------------------------------------
+
+  - alias: Sync Export Quarter Price
+    id: ems_sync_export_quarter_price
+    mode: single
 
     trigger:
       - platform: time_pattern
