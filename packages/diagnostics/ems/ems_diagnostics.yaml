@@ -11,10 +11,10 @@ template:
         icon: mdi:heart-pulse
 
         state: >
-          {% set pv = states('sensor.pv_power') %}
-          {% set load = states('sensor.load_power') %}
-          {% set soc = states('sensor.battery_soc') %}
-          {% set grid = states('sensor.grid_power') %}
+          {% set pv = states('sensor.ems_pv_power') %}
+          {% set load = states('sensor.ems_load_power') %}
+          {% set soc = states('sensor.ems_battery_soc') %}
+          {% set grid = states('sensor.ems_grid_power') %}
 
           {% if pv in ['unknown','unavailable']
                 or load in ['unknown','unavailable']
@@ -35,10 +35,10 @@ template:
         icon: mdi:scale-balance
 
         state: >
-          {% set pv = states('sensor.pv_power') | float(0) %}
-          {% set load = states('sensor.load_power') | float(0) %}
-          {% set grid = states('sensor.grid_power') | float(0) %}
-          {% set battery = states('sensor.battery_power') | float(0) %}
+          {% set pv = states('sensor.ems_pv_power') | default('0') | float(0) %}
+          {% set load = states('sensor.ems_load_power') | default('0') | float(0) %}
+          {% set grid = states('sensor.ems_grid_power') | default('0') | float(0) %}
+          {% set battery = states('sensor.ems_battery_power') | default('0') | float(0) %}
 
           {% set balance = pv + grid + battery - load %}
 
@@ -58,7 +58,7 @@ template:
         icon: mdi:chart-timeline-variant
 
         state: >
-          {% set score = states('sensor.ems_strategy_stability_score') | float(0) %}
+          {% set score = states('sensor.ems_strategy_stability_score') | default('0') | float(0) %}
 
           {% if score >= 4 %}
             very_stable
@@ -80,8 +80,8 @@ template:
         icon: mdi:finance
 
         state: >
-          {% set profit = states('sensor.ems_profit_decision') %}
-          {% set spread = states('sensor.ems_profit_spread') | float(0) %}
+          {% set profit = states('sensor.ems_profit_decision') | default('store') %}
+          {% set spread = states('sensor.ems_profit_spread') | default('0') | float(0) %}
 
           {% if profit == 'sell' and spread > 0.15 %}
             profitable
@@ -101,8 +101,8 @@ template:
         icon: mdi:chart-line-variant
 
         state: >
-          {% set adaptive_pv = states('sensor.ems_adaptive_pv_forecast') | float(0) %}
-          {% set manual_pv = states('input_number.pv_forecast_today') | float(0) %}
+          {% set adaptive_pv = states('sensor.ems_adaptive_pv_forecast') | default('0') | float(0) %}
+          {% set manual_pv = states('input_number.pv_forecast_today') | default('0') | float(0) %}
           {% set diff = ((adaptive_pv - manual_pv) / manual_pv * 100) if manual_pv > 0 else 0 %}
 
           {% if diff > 20 or diff < -20 %}
@@ -115,18 +115,6 @@ template:
 
 
 # ------------------------------------------------
-# EMS TOMORROW RCE STATUS (NOWY SENSOR v2.1)
-# ------------------------------------------------
-
-      - name: EMS Tomorrow RCE Status
-        unique_id: ems_tomorrow_rce_status
-        icon: mdi:clock-future
-
-        state: >
-          {{ states('sensor.ems_tomorrow_sell_opportunity') | default('normal') }}
-
-
-# ------------------------------------------------
 # EMS SYSTEM HEALTH v2.1 (ulepszony – sprawdza WSZYSTKO)
 # ------------------------------------------------
 
@@ -135,10 +123,10 @@ template:
         icon: mdi:shield-check
 
         state: >
-          {% set sensors = states('sensor.ems_sensor_health') %}
-          {% set balance = states('sensor.ems_energy_balance_check') %}
-          {% set stability = states('sensor.ems_strategy_stability') %}
-          {% set adaptive = states('sensor.ems_adaptive_forecast_status') %}
+          {% set sensors = states('sensor.ems_sensor_health') | default('ok') %}
+          {% set balance = states('sensor.ems_energy_balance_check') | default('ok') %}
+          {% set stability = states('sensor.ems_strategy_stability') | default('stable') %}
+          {% set adaptive = states('sensor.ems_adaptive_forecast_status') | default('stable') %}
           {% set tomorrow = states('sensor.ems_tomorrow_sell_opportunity') | default('normal') %}
 
           {% if sensors == 'ok'
@@ -160,3 +148,24 @@ template:
           {% else %}
             degraded
           {% endif %}
+
+automation:
+
+# ------------------------------------------------
+# NOWOŚĆ: ALERT NA SYSTEM HEALTH DEGRADED
+# ------------------------------------------------
+
+  - alias: EMS Health Alert
+    id: ems_health_alert
+    trigger:
+      - platform: state
+        entity_id: sensor.ems_system_health
+        to: 
+          - 'sensor_error'
+          - 'energy_mismatch'
+          - 'strategy_unstable'
+          - 'degraded'
+    action:
+      - service: notify.mobile_app_your_phone  {# Zmień na Twój notifier #}
+        data:
+          message: "EMS System Health: {{ states('sensor.ems_system_health') }} - Sprawdź diagnostykę!"
