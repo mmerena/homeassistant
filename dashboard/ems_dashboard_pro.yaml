@@ -1,0 +1,43 @@
+title: EMS Dashboard
+
+views:
+
+  - title: EMS
+    path: ems
+    cards:
+
+      - type: entities
+        title: EMS Status
+        entities:
+
+          - sensor.ems_energy_strategy
+          - sensor.ems_system_mode
+          - sensor.ems_foxess_mode
+
+      - type: entities
+        title: Energy Inputs
+        entities:
+
+          - sensor.pv_power
+          - sensor.load_power
+          - sensor.battery_soc
+          - sensor.energy_tariff_g13
+          - input_number.energy_export_price
+
+      - type: entities
+        title: EMS Analysis
+        entities:
+
+          - sensor.ems_pv_surplus
+          - sensor.ems_pv_surplus_level
+          - sensor.ems_battery_state
+          - sensor.ems_export_profitability
+
+      - type: entities
+        title: Battery Control
+        entities:
+
+          - sensor.ems_dynamic_max_soc
+          - input_number.foxess_ems_min_soc
+          - input_number.foxess_ems_fd_soc
+          - input_number.foxess_ems_fd_power
