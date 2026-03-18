@@ -1,0 +1,171 @@
+title: BMS2 – FoxESS
+path: bms2
+icon: mdi:battery-heart-outline   # inna ikona, żeby odróżnić od BMS1
+badges: []  # możesz dodać badge z SoC np. sensor.foxess_38310_bms2_soc
+
+cards:
+  - type: markdown
+    content: |
+      ## BMS2 – Status & Identyfikacja
+      
+      FoxESS rejestry 37700 / 38334
+
+  - type: horizontal-stack
+    cards:
+      - type: tile
+        entity: sensor.foxess_37700_bms2_connection_status
+        name: Połączenie
+        icon: mdi:lan-connect
+        layout: vertical
+        fill_container: true
+
+      - type: tile
+        entity: sensor.foxess_38310_bms2_soc
+        name: SoC
+        icon: mdi:battery
+        layout: vertical
+        primary_info: state
+        secondary_info: name
+
+      - type: tile
+        entity: sensor.foxess_38322_bms2_soh
+        name: SoH
+        icon: mdi:battery-heart
+        layout: vertical
+
+  - type: grid
+    square: false
+    columns: 1
+    cards:
+      - type: entities
+        title: Master BMS2
+        entities:
+          - sensor.foxess_37701_bms2_master_version
+          - sensor.foxess_37702_bms2_master_type
+          - sensor.foxess_37703_bms2_master_sn
+
+      - type: entities
+        title: Slave BMS2
+        entities:
+          - sensor.foxess_37730_bms2_slave_number
+          - sensor.foxess_37731_bms2_slave_1_version
+          - sensor.foxess_37795_bms2_slave_1_sn
+          - sensor.foxess_37732_bms2_slave_2_version
+          - sensor.foxess_37811_bms2_slave_2_sn
+          - sensor.foxess_37733_bms2_slave_3_version
+          - sensor.foxess_37827_bms2_slave_3_sn
+          - sensor.foxess_37734_bms2_slave_4_version
+          - sensor.foxess_37843_bms2_slave_4_sn
+          - sensor.foxess_37735_bms2_slave_5_version
+          - sensor.foxess_37859_bms2_slave_5_sn
+          - sensor.foxess_37736_bms2_slave_6_version
+          - sensor.foxess_37875_bms2_slave_6_sn
+          - sensor.foxess_37737_bms2_slave_7_version
+          - sensor.foxess_37891_bms2_slave_7_sn
+          - sensor.foxess_37738_bms2_slave_8_version
+          - sensor.foxess_37907_bms2_slave_8_sn
+          - sensor.foxess_37739_bms2_slave_9_version
+          - sensor.foxess_37923_bms2_slave_9_sn
+
+  - type: markdown
+    content: |
+      ## Główne parametry BMS2
+
+  - type: grid
+    square: false
+    columns: 3
+    cards:
+      - type: tile
+        entity: sensor.foxess_38307_bms2_voltage
+        name: Napięcie
+        icon: mdi:flash
+        layout: vertical
+
+      - type: tile
+        entity: sensor.foxess_38308_bms2_current
+        name: Prąd
+        icon: mdi:current-dc
+        layout: vertical
+
+      - type: tile
+        entity: sensor.foxess_38330_bms2_remain_energy
+        name: Pozostała energia
+        icon: mdi:battery-charging-90
+        layout: vertical
+
+  - type: horizontal-stack
+    cards:
+      - type: tile
+        entity: sensor.foxess_38331_bms2_fcc_capacity
+        name: Pojemność FCC
+        icon: mdi:battery-outline
+
+      - type: tile
+        entity: sensor.foxess_38333_bms2_design_energy
+        name: Energia nominalna
+        icon: mdi:battery
+
+  - type: markdown
+    content: |
+      ## Temperatury
+
+  - type: horizontal-stack
+    cards:
+      - type: tile
+        entity: sensor.foxess_38309_bms2_ambient_temperature
+        name: Otoczenie
+        icon: mdi:home-thermometer
+
+      - type: tile
+        entity: sensor.foxess_38315_bms2_max_temperature
+        name: Max temp.
+        icon: mdi:thermometer-high
+
+      - type: tile
+        entity: sensor.foxess_38316_bms2_min_temperature
+        name: Min temp.
+        icon: mdi:thermometer-low
+
+  - type: markdown
+    content: |
+      ## Napięcia komórek
+
+  - type: entities
+    entities:
+      - entity: sensor.foxess_38317_bms2_max_cell_voltage
+        name: Max napięcie komórki
+      - entity: sensor.foxess_38318_bms2_min_cell_voltage
+        name: Min napięcie komórki
+
+  - type: markdown
+    content: |
+      ## Alarmy / Faulty
+
+  - type: entities
+    title: Rejestry błędów (0 = OK)
+    entities:
+      - sensor.foxess_38324_bms2_fault1
+      - sensor.foxess_38325_bms2_fault2
+      - sensor.foxess_38326_bms2_fault3
+      - sensor.foxess_38327_bms2_fault4
+      - sensor.foxess_38328_bms2_fault5
+      - sensor.foxess_38329_bms2_fault6
+
+  - type: markdown
+    content: |
+      ## Inne
+
+  - type: entities
+    entities:
+      - sensor.foxess_38334_bms2_force_charge_flag
+
+  # ────────────────────────────────────────────────
+  # Historia – wykresy (ostatnie 24 h)
+  # ────────────────────────────────────────────────
+  - type: history-graph
+    entities:
+      - entity: sensor.foxess_38310_bms2_soc
+      - entity: sensor.foxess_38307_bms2_voltage
+      - entity: sensor.foxess_38308_bms2_current
+    hours_to_show: 24
+    refresh_interval: 60
