@@ -4,7 +4,7 @@
 - sensor:
     - name: FoxESS PV Całkowita Energia
       unique_id: foxess_pv_calkowita_kwh
-      state: "{{ states('sensor.foxess_39601_pv_total_energy') | float(0) | round(2) }}"
+      state: "{{ states('sensor.foxess_39601_pv_total_energy') | float(0) / 1000 | round(2) }}"
       unit_of_measurement: kWh
       device_class: energy
       state_class: total_increasing
@@ -30,14 +30,14 @@
 - sensor:
     - name: FoxESS Bateria Ładowanie Całkowite
       unique_id: foxess_bateria_ladowanie_calkowite_kwh
-      state: "{{ states('sensor.foxess_39605_total_charging_capacity') | float(0) | round(2) }}"
+      state: "{{ states('sensor.foxess_39605_total_charging_capacity') | float(0) / 1000 | round(2) }}"
       unit_of_measurement: kWh
       device_class: energy
       state_class: total_increasing
 
     - name: FoxESS Bateria Rozładowanie Całkowite
       unique_id: foxess_bateria_rozladowanie_calkowite_kwh
-      state: "{{ states('sensor.foxess_39609_total_discharge_energy') | float(0) | round(2) }}"
+      state: "{{ states('sensor.foxess_39609_total_discharge_energy') | float(0) / 1000 | round(2) }}"
       unit_of_measurement: kWh
       device_class: energy
       state_class: total_increasing
@@ -76,14 +76,14 @@
 - sensor:
     - name: FoxESS Import z Sieci Całkowity
       unique_id: foxess_import_calkowity_kwh
-      state: "{{ states('sensor.foxess_39617_total_power_taken') | float(0) | round(2) }}"
+      state: "{{ states('sensor.foxess_39617_total_power_taken') | float(0) / 1000 | round(2) }}"
       unit_of_measurement: kWh
       device_class: energy
       state_class: total_increasing
 
     - name: FoxESS Energia Zwrócona do Sieci (Eksport Całkowity)
       unique_id: foxess_eksport_calkowity_kwh
-      state: "{{ states('sensor.foxess_39613_total_feeder_network_energy') | float(0) | round(2) }}"
+      state: "{{ states('sensor.foxess_39613_total_feeder_network_energy') | float(0) / 1000 | round(2) }}"
       unit_of_measurement: kWh
       device_class: energy
       state_class: total_increasing
