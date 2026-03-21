@@ -2245,6 +2245,16 @@
       scan_interval: 60
 
     # 246–261: Energia kumulowana – całkowita i dzienna
+    - name: FoxESS 39601-39631 Raw Block
+      unique_id: foxess_39601_39631_raw_block
+      slave: 247
+      address: 39601
+      input_type: holding
+      data_type: custom
+      structure: ">32H"
+      count: 32
+      scan_interval: 300
+    
     - name: FoxESS 39601 PV Total Energy
       unique_id: foxess_39601_pv_total_energy
       slave: 247
