@@ -149,7 +149,6 @@
       unit_of_measurement: Wh
       device_class: energy
       state_class: total_increasing
-      precision: 2
 
     # 39603 – rejestry 2-3
     # 39603 – Total PV Power Today (kWh)
@@ -165,7 +164,6 @@
       unit_of_measurement: kWh
       device_class: energy
       state_class: total_increasing
-      precision: 2
 
     # 39605 – rejestry 4-5
     # 39605 – Total Charging Capacity (Wh)
@@ -181,7 +179,6 @@
       unit_of_measurement: Wh
       device_class: energy
       state_class: total_increasing
-      precision: 2
 
     # 39607 – rejestry 6-7
     # 39607 – Today's Total Charging Capacity (kWh)
@@ -197,7 +194,6 @@
       unit_of_measurement: kWh
       device_class: energy
       state_class: total_increasing
-      precision: 2
 
     # 39609 – rejestry 8-9
     # 39609 – Total Discharge Energy (Wh)
@@ -213,7 +209,6 @@
       unit_of_measurement: Wh
       device_class: energy
       state_class: total_increasing
-      precision: 2
 
     # 39611 – rejestry 10-11
     # 39611 – Today's Total Discharge Energy (kWh)
@@ -229,7 +224,6 @@
       unit_of_measurement: kWh
       device_class: energy
       state_class: total_increasing
-      precision: 2
 
     # 39613 – rejestry 12-13
     # 39613 – Total Feeder Network Energy (Wh)
@@ -245,7 +239,6 @@
       unit_of_measurement: Wh
       device_class: energy
       state_class: total_increasing
-      precision: 2
 
     # 39615 – rejestry 14-15
     # 39615 – Today's Total Feeder Energy (kWh)
@@ -261,7 +254,6 @@
       unit_of_measurement: kWh
       device_class: energy
       state_class: total_increasing
-      precision: 2
 
     # 39617 – rejestry 16-17
     # 39617 – Total Power Taken (Wh)
@@ -277,7 +269,6 @@
       unit_of_measurement: Wh
       device_class: energy
       state_class: total_increasing
-      precision: 2
 
     # 39619 – rejestry 18-19
     # 39619 – Today's Total Electricity Consumption (kWh)
@@ -293,7 +284,6 @@
       unit_of_measurement: kWh
       device_class: energy
       state_class: total_increasing
-      precision: 2
 
     # 39621 – rejestry 20-21
     # 39621 – Output Total Energy (Wh)
@@ -309,7 +299,6 @@
       unit_of_measurement: Wh
       device_class: energy
       state_class: total_increasing
-      precision: 2
 
     # 39623 – rejestry 22-23
     # 39623 – Total Power Output Today (kWh)
@@ -325,7 +314,6 @@
       unit_of_measurement: kWh
       device_class: energy
       state_class: total_increasing
-      precision: 2
 
     # 39625 – rejestry 24-25
     # 39625 – Enter Total Energy (Wh)
@@ -341,7 +329,6 @@
       unit_of_measurement: Wh
       device_class: energy
       state_class: total_increasing
-      precision: 2
 
     # 39627 – rejestry 26-27
     # 39627 – Enter Total Energy Today (kWh)
@@ -357,7 +344,6 @@
       unit_of_measurement: kWh
       device_class: energy
       state_class: total_increasing
-      precision: 2
 
     # 39629 – rejestry 28-29
     # 39629 – Total Load Energy (Wh)
@@ -373,7 +359,6 @@
       unit_of_measurement: Wh
       device_class: energy
       state_class: total_increasing
-      precision: 2
 
     # 39631 – rejestry 30-31
     # 39631 – Total Load Energy Today (kWh)
@@ -389,7 +374,6 @@
       unit_of_measurement: kWh
       device_class: energy
       state_class: total_increasing
-      precision: 2
 
 - sensor:
 
