@@ -34,6 +34,365 @@
 
 - sensor:
 
+    - name: FoxESS BMS1 Master Version
+      unique_id: foxess_bms1_master_version
+      state: >
+        {% set raw = states('sensor.foxess_37003_bms1_master_version') | int(0) %}
+        {% set hexv = "%04X" % raw %}
+        {{ hexv[0:2] | int(base=16) }}.{{hexv[2:3] | int(base=16)}}{{ hexv[3:4] | int(base=16) }}
+      icon: mdi:information-outline
+      availability: "{{ is_number(states('sensor.foxess_37003_bms1_master_version')) }}"
+
+    - name: FoxESS BMS1 Master Type
+      unique_id: foxess_bms1_master_type
+      state: >
+        {% set raw = states('sensor.foxess_37004_bms1_master_type') | int(0) %}
+        {% set hexv = "%04X" % raw %}
+        {{ hexv[0:2] | int(base=16) }}.{{hexv[2:3] | int(base=16)}}{{ hexv[3:4] | int(base=16) }}
+      icon: mdi:information-outline
+      availability: "{{ is_number(states('sensor.foxess_37004_bms1_master_type')) }}"
+
+    - name: FoxESS BMS1 Slave 1 Version
+      unique_id: foxess_bms1_slave_1_version
+      state: >
+        {% set raw = states('sensor.foxess_37033_bms1_slave_1_version') | int(0) %}
+        {% set hexv = "%04X" % raw %}
+        {{ hexv[0:2] | int(base=16) }}.{{hexv[2:3] | int(base=16)}}{{ hexv[3:4] | int(base=16) }}
+      icon: mdi:information-outline
+      availability: "{{ is_number(states('sensor.foxess_37033_bms1_slave_1_version')) }}"
+
+    - name: FoxESS BMS1 Slave 2 Version
+      unique_id: foxess_bms1_slave_2_version
+      state: >
+        {% set raw = states('sensor.foxess_37034_bms1_slave_2_version') | int(0) %}
+        {% set hexv = "%04X" % raw %}
+        {{ hexv[0:2] | int(base=16) }}.{{hexv[2:3] | int(base=16)}}{{ hexv[3:4] | int(base=16) }}
+      icon: mdi:information-outline
+      availability: "{{ is_number(states('sensor.foxess_37034_bms1_slave_2_version')) }}"
+
+    - name: FoxESS BMS1 Slave 3 Version
+      unique_id: foxess_bms1_slave_3_version
+      state: >
+        {% set raw = states('sensor.foxess_37035_bms1_slave_3_version') | int(0) %}
+        {% set hexv = "%04X" % raw %}
+        {{ hexv[0:2] | int(base=16) }}.{{hexv[2:3] | int(base=16)}}{{ hexv[3:4] | int(base=16) }}
+      icon: mdi:information-outline
+      availability: "{{ is_number(states('sensor.foxess_37035_bms1_slave_3_version')) }}"
+
+    - name: FoxESS BMS1 Slave 4 Version
+      unique_id: foxess_bms1_slave_4_version
+      state: >
+        {% set raw = states('sensor.foxess_37036_bms1_slave_4_version') | int(0) %}
+        {% set hexv = "%04X" % raw %}
+        {{ hexv[0:2] | int(base=16) }}.{{hexv[2:3] | int(base=16)}}{{ hexv[3:4] | int(base=16) }}
+      icon: mdi:information-outline
+      availability: "{{ is_number(states('sensor.foxess_37036_bms1_slave_4_version')) }}"
+
+    - name: FoxESS BMS1 Slave 5 Version
+      unique_id: foxess_bms1_slave_5_version
+      state: >
+        {% set raw = states('sensor.foxess_37037_bms1_slave_5_version') | int(0) %}
+        {% set hexv = "%04X" % raw %}
+        {{ hexv[0:2] | int(base=16) }}.{{hexv[2:3] | int(base=16)}}{{ hexv[3:4] | int(base=16) }}
+      icon: mdi:information-outline
+      availability: "{{ is_number(states('sensor.foxess_37037_bms1_slave_5_version')) }}"
+
+    - name: FoxESS BMS1 Slave 6 Version
+      unique_id: foxess_bms1_slave_6_version
+      state: >
+        {% set raw = states('sensor.foxess_37038_bms1_slave_6_version') | int(0) %}
+        {% set hexv = "%04X" % raw %}
+        {{ hexv[0:2] | int(base=16) }}.{{hexv[2:3] | int(base=16)}}{{ hexv[3:4] | int(base=16) }}
+      icon: mdi:information-outline
+      availability: "{{ is_number(states('sensor.foxess_37038_bms1_slave_6_version')) }}"
+
+    - name: FoxESS BMS1 Slave 7 Version
+      unique_id: foxess_bms1_slave_7_version
+      state: >
+        {% set raw = states('sensor.foxess_37039_bms1_slave_7_version') | int(0) %}
+        {% set hexv = "%04X" % raw %}
+        {{ hexv[0:2] | int(base=16) }}.{{hexv[2:3] | int(base=16)}}{{ hexv[3:4] | int(base=16) }}
+      icon: mdi:information-outline
+      availability: "{{ is_number(states('sensor.foxess_37039_bms1_slave_7_version')) }}"
+
+    - name: FoxESS BMS1 Slave 8 Version
+      unique_id: foxess_bms1_slave_8_version
+      state: >
+        {% set raw = states('sensor.foxess_37040_bms1_slave_8_version') | int(0) %}
+        {% set hexv = "%04X" % raw %}
+        {{ hexv[0:2] | int(base=16) }}.{{hexv[2:3] | int(base=16)}}{{ hexv[3:4] | int(base=16) }}
+      icon: mdi:information-outline
+      availability: "{{ is_number(states('sensor.foxess_37040_bms1_slave_8_version')) }}"
+
+    - name: FoxESS BMS1 Slave 9 Version
+      unique_id: foxess_bms1_slave_9_version
+      state: >
+        {% set raw = states('sensor.foxess_37041_bms1_slave_9_version') | int(0) %}
+        {% set hexv = "%04X" % raw %}
+        {{ hexv[0:2] | int(base=16) }}.{{hexv[2:3] | int(base=16)}}{{ hexv[3:4] | int(base=16) }}
+      icon: mdi:information-outline
+      availability: "{{ is_number(states('sensor.foxess_37041_bms1_slave_9_version')) }}"
+
+- sensor:
+
+    # 39601 – rejestry 0-1
+    # 39601 – PV Total Energy (Wh)
+    - name: FoxESS 39601 PV Total Energy
+      unique_id: foxess_39601_pv_total_energy
+      availability: >
+        {{ states('sensor.foxess_39601_39631_raw_block') not in ['unknown', 'unavailable', ''] 
+           and ',' in states('sensor.foxess_39601_39631_raw_block') }}
+      state: >
+        {% set raw = states('sensor.foxess_39601_39631_raw_block') %}
+        {% set values = raw.split(',') | map('float', 0) | list %}
+        {{ ((values[0] | int) * 65536 + (values[1] | int)) * 0.01 | round(2) }}
+      unit_of_measurement: Wh
+      device_class: energy
+      state_class: total_increasing
+      precision: 2
+
+    # 39603 – rejestry 2-3
+    # 39603 – Total PV Power Today (kWh)
+    - name: FoxESS 39603 Total PV Power Today
+      unique_id: foxess_39603_total_pv_power_today
+      availability: >
+        {{ states('sensor.foxess_39601_39631_raw_block') not in ['unknown', 'unavailable', ''] 
+           and ',' in states('sensor.foxess_39601_39631_raw_block') }}
+      state: >
+        {% set raw = states('sensor.foxess_39601_39631_raw_block') %}
+        {% set values = raw.split(',') | map('float', 0) | list %}
+        {{ ((values[2] | int) * 65536 + (values[3] | int)) * 0.01 | round(2) }}
+      unit_of_measurement: kWh
+      device_class: energy
+      state_class: total_increasing
+      precision: 2
+
+    # 39605 – rejestry 4-5
+    # 39605 – Total Charging Capacity (Wh)
+    - name: FoxESS 39605 Total Charging Capacity
+      unique_id: foxess_39605_total_charging_capacity
+      availability: >
+        {{ states('sensor.foxess_39601_39631_raw_block') not in ['unknown', 'unavailable', ''] 
+           and ',' in states('sensor.foxess_39601_39631_raw_block') }}
+      state: >
+        {% set raw = states('sensor.foxess_39601_39631_raw_block') %}
+        {% set values = raw.split(',') | map('float', 0) | list %}
+        {{ ((values[4] | int) * 65536 + (values[5] | int)) * 0.01 | round(2) }}
+      unit_of_measurement: Wh
+      device_class: energy
+      state_class: total_increasing
+      precision: 2
+
+    # 39607 – rejestry 6-7
+    # 39607 – Today's Total Charging Capacity (kWh)
+    - name: FoxESS 39607 Today's Total Charging Capacity
+      unique_id: foxess_39607_todays_total_charging_capacity
+      availability: >
+        {{ states('sensor.foxess_39601_39631_raw_block') not in ['unknown', 'unavailable', ''] 
+           and ',' in states('sensor.foxess_39601_39631_raw_block') }}
+      state: >
+        {% set raw = states('sensor.foxess_39601_39631_raw_block') %}
+        {% set values = raw.split(',') | map('float', 0) | list %}
+        {{ ((values[6] | int) * 65536 + (values[7] | int)) * 0.01 | round(2) }}
+      unit_of_measurement: kWh
+      device_class: energy
+      state_class: total_increasing
+      precision: 2
+
+    # 39609 – rejestry 8-9
+    # 39609 – Total Discharge Energy (Wh)
+    - name: FoxESS 39609 Total Discharge Energy
+      unique_id: foxess_39609_total_discharge_energy
+      availability: >
+        {{ states('sensor.foxess_39601_39631_raw_block') not in ['unknown', 'unavailable', ''] 
+           and ',' in states('sensor.foxess_39601_39631_raw_block') }}
+      state: >
+        {% set raw = states('sensor.foxess_39601_39631_raw_block') %}
+        {% set values = raw.split(',') | map('float', 0) | list %}
+        {{ ((values[8] | int) * 65536 + (values[9] | int)) * 0.01 | round(2) }}
+      unit_of_measurement: Wh
+      device_class: energy
+      state_class: total_increasing
+      precision: 2
+
+    # 39611 – rejestry 10-11
+    # 39611 – Today's Total Discharge Energy (kWh)
+    - name: FoxESS 39611 Today's Total Discharge Energy
+      unique_id: foxess_39611_todays_total_discharge_energy
+      availability: >
+        {{ states('sensor.foxess_39601_39631_raw_block') not in ['unknown', 'unavailable', ''] 
+           and ',' in states('sensor.foxess_39601_39631_raw_block') }}
+      state: >
+        {% set raw = states('sensor.foxess_39601_39631_raw_block') %}
+        {% set values = raw.split(',') | map('float', 0) | list %}
+        {{ ((values[10] | int) * 65536 + (values[11] | int)) * 0.01 | round(2) }}
+      unit_of_measurement: kWh
+      device_class: energy
+      state_class: total_increasing
+      precision: 2
+
+    # 39613 – rejestry 12-13
+    # 39613 – Total Feeder Network Energy (Wh)
+    - name: FoxESS 39613 Total Feeder Network Energy
+      unique_id: foxess_39613_total_feeder_network_energy
+      availability: >
+        {{ states('sensor.foxess_39601_39631_raw_block') not in ['unknown', 'unavailable', ''] 
+           and ',' in states('sensor.foxess_39601_39631_raw_block') }}
+      state: >
+        {% set raw = states('sensor.foxess_39601_39631_raw_block') %}
+        {% set values = raw.split(',') | map('float', 0) | list %}
+        {{ ((values[12] | int) * 65536 + (values[13] | int)) * 0.01 | round(2) }}
+      unit_of_measurement: Wh
+      device_class: energy
+      state_class: total_increasing
+      precision: 2
+
+    # 39615 – rejestry 14-15
+    # 39615 – Today's Total Feeder Energy (kWh)
+    - name: FoxESS 39615 Today's Total Feeder Energy
+      unique_id: foxess_39615_todays_total_feeder_energy
+      availability: >
+        {{ states('sensor.foxess_39601_39631_raw_block') not in ['unknown', 'unavailable', ''] 
+           and ',' in states('sensor.foxess_39601_39631_raw_block') }}
+      state: >
+        {% set raw = states('sensor.foxess_39601_39631_raw_block') %}
+        {% set values = raw.split(',') | map('float', 0) | list %}
+        {{ ((values[14] | int) * 65536 + (values[15] | int)) * 0.01 | round(2) }}
+      unit_of_measurement: kWh
+      device_class: energy
+      state_class: total_increasing
+      precision: 2
+
+    # 39617 – rejestry 16-17
+    # 39617 – Total Power Taken (Wh)
+    - name: FoxESS 39617 Total Power Taken
+      unique_id: foxess_39617_total_power_taken
+      availability: >
+        {{ states('sensor.foxess_39601_39631_raw_block') not in ['unknown', 'unavailable', ''] 
+           and ',' in states('sensor.foxess_39601_39631_raw_block') }}
+      state: >
+        {% set raw = states('sensor.foxess_39601_39631_raw_block') %}
+        {% set values = raw.split(',') | map('float', 0) | list %}
+        {{ ((values[16] | int) * 65536 + (values[17] | int)) * 0.01 | round(2) }}
+      unit_of_measurement: Wh
+      device_class: energy
+      state_class: total_increasing
+      precision: 2
+
+    # 39619 – rejestry 18-19
+    # 39619 – Today's Total Electricity Consumption (kWh)
+    - name: FoxESS 39619 Today's Total Electricity Consumption
+      unique_id: foxess_39619_todays_total_electricity_consumption
+      availability: >
+        {{ states('sensor.foxess_39601_39631_raw_block') not in ['unknown', 'unavailable', ''] 
+           and ',' in states('sensor.foxess_39601_39631_raw_block') }}
+      state: >
+        {% set raw = states('sensor.foxess_39601_39631_raw_block') %}
+        {% set values = raw.split(',') | map('float', 0) | list %}
+        {{ ((values[18] | int) * 65536 + (values[19] | int)) * 0.01 | round(2) }}
+      unit_of_measurement: kWh
+      device_class: energy
+      state_class: total_increasing
+      precision: 2
+
+    # 39621 – rejestry 20-21
+    # 39621 – Output Total Energy (Wh)
+    - name: FoxESS 39621 Output Total Energy
+      unique_id: foxess_39621_output_total_energy
+      availability: >
+        {{ states('sensor.foxess_39601_39631_raw_block') not in ['unknown', 'unavailable', ''] 
+           and ',' in states('sensor.foxess_39601_39631_raw_block') }}
+      state: >
+        {% set raw = states('sensor.foxess_39601_39631_raw_block') %}
+        {% set values = raw.split(',') | map('float', 0) | list %}
+        {{ ((values[20] | int) * 65536 + (values[21] | int)) * 0.01 | round(2) }}
+      unit_of_measurement: Wh
+      device_class: energy
+      state_class: total_increasing
+      precision: 2
+
+    # 39623 – rejestry 22-23
+    # 39623 – Total Power Output Today (kWh)
+    - name: FoxESS 39623 Total Power Output Today
+      unique_id: foxess_39623_total_power_output_today
+      availability: >
+        {{ states('sensor.foxess_39601_39631_raw_block') not in ['unknown', 'unavailable', ''] 
+           and ',' in states('sensor.foxess_39601_39631_raw_block') }}
+      state: >
+        {% set raw = states('sensor.foxess_39601_39631_raw_block') %}
+        {% set values = raw.split(',') | map('float', 0) | list %}
+        {{ ((values[22] | int) * 65536 + (values[23] | int)) * 0.01 | round(2) }}
+      unit_of_measurement: kWh
+      device_class: energy
+      state_class: total_increasing
+      precision: 2
+
+    # 39625 – rejestry 24-25
+    # 39625 – Enter Total Energy (Wh)
+    - name: FoxESS 39625 Enter Total Energy
+      unique_id: foxess_39625_enter_total_energy
+      availability: >
+        {{ states('sensor.foxess_39601_39631_raw_block') not in ['unknown', 'unavailable', ''] 
+           and ',' in states('sensor.foxess_39601_39631_raw_block') }}
+      state: >
+        {% set raw = states('sensor.foxess_39601_39631_raw_block') %}
+        {% set values = raw.split(',') | map('float', 0) | list %}
+        {{ ((values[24] | int) * 65536 + (values[25] | int)) * 0.01 | round(2) }}
+      unit_of_measurement: Wh
+      device_class: energy
+      state_class: total_increasing
+      precision: 2
+
+    # 39627 – rejestry 26-27
+    # 39627 – Enter Total Energy Today (kWh)
+    - name: FoxESS 39627 Enter Total Energy Today
+      unique_id: foxess_39627_enter_total_energy_today
+      availability: >
+        {{ states('sensor.foxess_39601_39631_raw_block') not in ['unknown', 'unavailable', ''] 
+           and ',' in states('sensor.foxess_39601_39631_raw_block') }}
+      state: >
+        {% set raw = states('sensor.foxess_39601_39631_raw_block') %}
+        {% set values = raw.split(',') | map('float', 0) | list %}
+        {{ ((values[26] | int) * 65536 + (values[27] | int)) * 0.01 | round(2) }}
+      unit_of_measurement: kWh
+      device_class: energy
+      state_class: total_increasing
+      precision: 2
+
+    # 39629 – rejestry 28-29
+    # 39629 – Total Load Energy (Wh)
+    - name: FoxESS 39629 Total Load Energy
+      unique_id: foxess_39629_total_load_energy
+      availability: >
+        {{ states('sensor.foxess_39601_39631_raw_block') not in ['unknown', 'unavailable', ''] 
+           and ',' in states('sensor.foxess_39601_39631_raw_block') }}
+      state: >
+        {% set raw = states('sensor.foxess_39601_39631_raw_block') %}
+        {% set values = raw.split(',') | map('float', 0) | list %}
+        {{ ((values[28] | int) * 65536 + (values[29] | int)) * 0.01 | round(2) }}
+      unit_of_measurement: Wh
+      device_class: energy
+      state_class: total_increasing
+      precision: 2
+
+    # 39631 – rejestry 30-31
+    # 39631 – Total Load Energy Today (kWh)
+    - name: FoxESS 39631 Total Load Energy Today
+      unique_id: foxess_39631_total_load_energy_today
+      availability: >
+        {{ states('sensor.foxess_39601_39631_raw_block') not in ['unknown', 'unavailable', ''] 
+           and ',' in states('sensor.foxess_39601_39631_raw_block') }}
+      state: >
+        {% set raw = states('sensor.foxess_39601_39631_raw_block') %}
+        {% set values = raw.split(',') | map('float', 0) | list %}
+        {{ ((values[30] | int) * 65536 + (values[31] | int)) * 0.01 | round(2) }}
+      unit_of_measurement: kWh
+      device_class: energy
+      state_class: total_increasing
+      precision: 2
+
+- sensor:
+
     - name: FoxESS Status 3
       unique_id: foxess_status_3
       state: >
@@ -77,16 +436,25 @@
         {{ state_attr('sensor.foxess_46601_46619_block','regs')[7] / 10 }}
 
     - name: FoxESS Minimum SoC
+      unique_id: foxess_minimum_soc
+      unit_of_measurement: "%"
       state: >
         {{ state_attr('sensor.foxess_46601_46619_block','regs')[8] }}
+      icon: mdi:battery-low
 
     - name: FoxESS Maximum SoC
+      unique_id: foxess_maximum_soc
+      unit_of_measurement: "%"
       state: >
         {{ state_attr('sensor.foxess_46601_46619_block','regs')[9] }}
+      icon: mdi:battery-high
 
     - name: FoxESS Minimum SoC OnGrid
+      unique_id: foxess_minimum_soc_ongrid
+      unit_of_measurement: "%"
       state: >
         {{ state_attr('sensor.foxess_46601_46619_block','regs')[10] }}
+      icon: mdi:battery-medium
 
     - name: FoxESS EPS Frequency Select
       state: >
