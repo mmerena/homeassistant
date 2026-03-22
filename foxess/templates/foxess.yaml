@@ -135,6 +135,430 @@
 
 - sensor:
 
+    # 39201 – EPS R Phase Voltage (uint16, 0.1 V) – pojedynczy rejestr
+    - name: FoxESS 39201 EPS R Phase Voltage
+      unique_id: foxess_39201_eps_r_phase_voltage
+      availability: >
+        {{ states('sensor.foxess_39201_39237_raw_block') not in ['unknown', 'unavailable', '']
+           and ',' in states('sensor.foxess_39201_39237_raw_block') }}
+      state: >
+        {% set raw = states('sensor.foxess_39201_39237_raw_block') %}
+        {% set values = raw.split(',') | map('float', 0) | list %}
+        {% if values | length >= 1 %}
+          {{ (values[0] * 0.1) | round(1) }}
+        {% else %} unavailable {% endif %}
+      unit_of_measurement: V
+      device_class: voltage
+      state_class: measurement
+
+    # 39202 – EPS S Phase Voltage
+    - name: FoxESS 39202 EPS S Phase Voltage
+      unique_id: foxess_39202_eps_s_phase_voltage
+      availability: >
+        {{ states('sensor.foxess_39201_39237_raw_block') not in ['unknown', 'unavailable', '']
+           and ',' in states('sensor.foxess_39201_39237_raw_block') }}
+      state: >
+        {% set raw = states('sensor.foxess_39201_39237_raw_block') %}
+        {% set values = raw.split(',') | map('float', 0) | list %}
+        {% if values | length >= 2 %}
+          {{ (values[1] * 0.1) | round(1) }}
+        {% else %} unavailable {% endif %}
+      unit_of_measurement: V
+      device_class: voltage
+      state_class: measurement
+
+    # 39203 – EPS T Phase Voltage
+    - name: FoxESS 39203 EPS T Phase Voltage
+      unique_id: foxess_39203_eps_t_phase_voltage
+      availability: >
+        {{ states('sensor.foxess_39201_39237_raw_block') not in ['unknown', 'unavailable', '']
+           and ',' in states('sensor.foxess_39201_39237_raw_block') }}
+      state: >
+        {% set raw = states('sensor.foxess_39201_39237_raw_block') %}
+        {% set values = raw.split(',') | map('float', 0) | list %}
+        {% if values | length >= 3 %}
+          {{ (values[2] * 0.1) | round(1) }}
+        {% else %} unavailable {% endif %}
+      unit_of_measurement: V
+      device_class: voltage
+      state_class: measurement
+
+    # 39204–39205 – EPS R Phase Current (int32, signed, 0.001 A)
+    - name: FoxESS 39204 EPS R Phase Current
+      unique_id: foxess_39204_eps_r_phase_current
+      availability: >
+        {{ states('sensor.foxess_39201_39237_raw_block') not in ['unknown', 'unavailable', '']
+           and ',' in states('sensor.foxess_39201_39237_raw_block') }}
+      state: >
+        {% set raw = states('sensor.foxess_39201_39237_raw_block') %}
+        {% set values = raw.split(',') | map('float', 0) | list %}
+        {% if values | length >= 5 %}
+          {% set high = values[3] | int %}
+          {% set low = values[4] | int %}
+          {% set val = high * 65536 + low %}
+          {% set signed = val - (4294967296 if high >= 32768 else 0) %}
+          {{ (signed * 0.001) | round(3) }}
+        {% else %} unavailable {% endif %}
+      unit_of_measurement: A
+      device_class: current
+      state_class: measurement
+
+    # 39206–39207 – EPS S Phase Current
+    - name: FoxESS 39206 EPS S Phase Current
+      unique_id: foxess_39206_eps_s_phase_current
+      availability: >
+        {{ states('sensor.foxess_39201_39237_raw_block') not in ['unknown', 'unavailable', '']
+           and ',' in states('sensor.foxess_39201_39237_raw_block') }}
+      state: >
+        {% set raw = states('sensor.foxess_39201_39237_raw_block') %}
+        {% set values = raw.split(',') | map('float', 0) | list %}
+        {% if values | length >= 7 %}
+          {% set high = values[5] | int %}
+          {% set low = values[6] | int %}
+          {% set val = high * 65536 + low %}
+          {% set signed = val - (4294967296 if high >= 32768 else 0) %}
+          {{ (signed * 0.001) | round(3) }}
+        {% else %} unavailable {% endif %}
+      unit_of_measurement: A
+      device_class: current
+      state_class: measurement
+
+    # 39208–39209 – EPS T Phase Current
+    - name: FoxESS 39208 EPS T Phase Current
+      unique_id: foxess_39208_eps_t_phase_current
+      availability: >
+        {{ states('sensor.foxess_39201_39237_raw_block') not in ['unknown', 'unavailable', '']
+           and ',' in states('sensor.foxess_39201_39237_raw_block') }}
+      state: >
+        {% set raw = states('sensor.foxess_39201_39237_raw_block') %}
+        {% set values = raw.split(',') | map('float', 0) | list %}
+        {% if values | length >= 9 %}
+          {% set high = values[7] | int %}
+          {% set low = values[8] | int %}
+          {% set val = high * 65536 + low %}
+          {% set signed = val - (4294967296 if high >= 32768 else 0) %}
+          {{ (signed * 0.001) | round(3) }}
+        {% else %} unavailable {% endif %}
+      unit_of_measurement: A
+      device_class: current
+      state_class: measurement
+
+    # 39210–39211 – EPS R Phase Power (int32, signed, W)
+    - name: FoxESS 39210 EPS R Phase Power
+      unique_id: foxess_39210_eps_r_phase_power
+      availability: >
+        {{ states('sensor.foxess_39201_39237_raw_block') not in ['unknown', 'unavailable', '']
+           and ',' in states('sensor.foxess_39201_39237_raw_block') }}
+      state: >
+        {% set raw = states('sensor.foxess_39201_39237_raw_block') %}
+        {% set values = raw.split(',') | map('float', 0) | list %}
+        {% if values | length >= 11 %}
+          {% set high = values[9] | int %}
+          {% set low = values[10] | int %}
+          {% set val = high * 65536 + low %}
+          {% set signed = val - (4294967296 if high >= 32768 else 0) %}
+          {{ signed | round(0) }}
+        {% else %} unavailable {% endif %}
+      unit_of_measurement: W
+      device_class: power
+      state_class: measurement
+
+    # 39212–39213 – EPS S Phase Power
+    - name: FoxESS 39212 EPS S Phase Power
+      unique_id: foxess_39212_eps_s_phase_power
+      availability: >
+        {{ states('sensor.foxess_39201_39237_raw_block') not in ['unknown', 'unavailable', '']
+           and ',' in states('sensor.foxess_39201_39237_raw_block') }}
+      state: >
+        {% set raw = states('sensor.foxess_39201_39237_raw_block') %}
+        {% set values = raw.split(',') | map('float', 0) | list %}
+        {% if values | length >= 13 %}
+          {% set high = values[11] | int %}
+          {% set low = values[12] | int %}
+          {% set val = high * 65536 + low %}
+          {% set signed = val - (4294967296 if high >= 32768 else 0) %}
+          {{ signed | round(0) }}
+        {% else %} unavailable {% endif %}
+      unit_of_measurement: W
+      device_class: power
+      state_class: measurement
+
+    # 39214–39215 – EPS T Phase Power
+    - name: FoxESS 39214 EPS T Phase Power
+      unique_id: foxess_39214_eps_t_phase_power
+      availability: >
+        {{ states('sensor.foxess_39201_39237_raw_block') not in ['unknown', 'unavailable', '']
+           and ',' in states('sensor.foxess_39201_39237_raw_block') }}
+      state: >
+        {% set raw = states('sensor.foxess_39201_39237_raw_block') %}
+        {% set values = raw.split(',') | map('float', 0) | list %}
+        {% if values | length >= 15 %}
+          {% set high = values[13] | int %}
+          {% set low = values[14] | int %}
+          {% set val = high * 65536 + low %}
+          {% set signed = val - (4294967296 if high >= 32768 else 0) %}
+          {{ signed | round(0) }}
+        {% else %} unavailable {% endif %}
+      unit_of_measurement: W
+      device_class: power
+      state_class: measurement
+
+    # 39216–39217 – EPS Combined Power
+    - name: FoxESS 39216 EPS Combined Power
+      unique_id: foxess_39216_eps_combined_power
+      availability: >
+        {{ states('sensor.foxess_39201_39237_raw_block') not in ['unknown', 'unavailable', '']
+           and ',' in states('sensor.foxess_39201_39237_raw_block') }}
+      state: >
+        {% set raw = states('sensor.foxess_39201_39237_raw_block') %}
+        {% set values = raw.split(',') | map('float', 0) | list %}
+        {% if values | length >= 17 %}
+          {% set high = values[15] | int %}
+          {% set low = values[16] | int %}
+          {% set val = high * 65536 + low %}
+          {% set signed = val - (4294967296 if high >= 32768 else 0) %}
+          {{ signed | round(0) }}
+        {% else %} unavailable {% endif %}
+      unit_of_measurement: W
+      device_class: power
+      state_class: measurement
+
+    # 39218 – EPS Frequency (int16, signed, 0.01 Hz) – pojedynczy rejestr
+    - name: FoxESS 39218 EPS Frequency
+      unique_id: foxess_39218_eps_frequency
+      availability: >
+        {{ states('sensor.foxess_39201_39237_raw_block') not in ['unknown', 'unavailable', '']
+           and ',' in states('sensor.foxess_39201_39237_raw_block') }}
+      state: >
+        {% set raw = states('sensor.foxess_39201_39237_raw_block') %}
+        {% set values = raw.split(',') | map('float', 0) | list %}
+        {% if values | length >= 18 %}
+          {% set raw_val = values[17] | int %}
+          {% set signed = raw_val - (65536 if raw_val >= 32768 else 0) %}
+          {{ (signed * 0.01) | round(2) }}
+        {% else %} unavailable {% endif %}
+      unit_of_measurement: Hz
+      device_class: frequency
+      state_class: measurement
+
+    # 39219–39220 – Load R Phase Power
+    - name: FoxESS 39219 Load R Phase Power
+      unique_id: foxess_39219_load_r_phase_power
+      availability: >
+        {{ states('sensor.foxess_39201_39237_raw_block') not in ['unknown', 'unavailable', '']
+           and ',' in states('sensor.foxess_39201_39237_raw_block') }}
+      state: >
+        {% set raw = states('sensor.foxess_39201_39237_raw_block') %}
+        {% set values = raw.split(',') | map('float', 0) | list %}
+        {% if values | length >= 20 %}
+          {% set high = values[18] | int %}
+          {% set low = values[19] | int %}
+          {% set val = high * 65536 + low %}
+          {% set signed = val - (4294967296 if high >= 32768 else 0) %}
+          {{ signed | round(0) }}
+        {% else %} unavailable {% endif %}
+      unit_of_measurement: W
+      device_class: power
+      state_class: measurement
+
+    # 39221–39222 – Load S Phase Power
+    - name: FoxESS 39221 Load S Phase Power
+      unique_id: foxess_39221_load_s_phase_power
+      availability: >
+        {{ states('sensor.foxess_39201_39237_raw_block') not in ['unknown', 'unavailable', '']
+           and ',' in states('sensor.foxess_39201_39237_raw_block') }}
+      state: >
+        {% set raw = states('sensor.foxess_39201_39237_raw_block') %}
+        {% set values = raw.split(',') | map('float', 0) | list %}
+        {% if values | length >= 22 %}
+          {% set high = values[20] | int %}
+          {% set low = values[21] | int %}
+          {% set val = high * 65536 + low %}
+          {% set signed = val - (4294967296 if high >= 32768 else 0) %}
+          {{ signed | round(0) }}
+        {% else %} unavailable {% endif %}
+      unit_of_measurement: W
+      device_class: power
+      state_class: measurement
+
+    # 39223–39224 – Load T Phase Power
+    - name: FoxESS 39223 Load T Phase Power
+      unique_id: foxess_39223_load_t_phase_power
+      availability: >
+        {{ states('sensor.foxess_39201_39237_raw_block') not in ['unknown', 'unavailable', '']
+           and ',' in states('sensor.foxess_39201_39237_raw_block') }}
+      state: >
+        {% set raw = states('sensor.foxess_39201_39237_raw_block') %}
+        {% set values = raw.split(',') | map('float', 0) | list %}
+        {% if values | length >= 24 %}
+          {% set high = values[22] | int %}
+          {% set low = values[23] | int %}
+          {% set val = high * 65536 + low %}
+          {% set signed = val - (4294967296 if high >= 32768 else 0) %}
+          {{ signed | round(0) }}
+        {% else %} unavailable {% endif %}
+      unit_of_measurement: W
+      device_class: power
+      state_class: measurement
+
+    # 39225–39226 – Load Combined Power
+    - name: FoxESS 39225 Load Combined Power
+      unique_id: foxess_39225_load_combined_power
+      availability: >
+        {{ states('sensor.foxess_39201_39237_raw_block') not in ['unknown', 'unavailable', '']
+           and ',' in states('sensor.foxess_39201_39237_raw_block') }}
+      state: >
+        {% set raw = states('sensor.foxess_39201_39237_raw_block') %}
+        {% set values = raw.split(',') | map('float', 0) | list %}
+        {% if values | length >= 26 %}
+          {% set high = values[24] | int %}
+          {% set low = values[25] | int %}
+          {% set val = high * 65536 + low %}
+          {% set signed = val - (4294967296 if high >= 32768 else 0) %}
+          {{ signed | round(0) }}
+        {% else %} unavailable {% endif %}
+      unit_of_measurement: W
+      device_class: power
+      state_class: measurement
+
+    # 39227 – Battery1 Voltage (int16, signed, 0.1 V)
+    - name: FoxESS 39227 Battery1 Voltage
+      unique_id: foxess_39227_battery1_voltage
+      availability: >
+        {{ states('sensor.foxess_39201_39237_raw_block') not in ['unknown', 'unavailable', '']
+           and ',' in states('sensor.foxess_39201_39237_raw_block') }}
+      state: >
+        {% set raw = states('sensor.foxess_39201_39237_raw_block') %}
+        {% set values = raw.split(',') | map('float', 0) | list %}
+        {% if values | length >= 27 %}
+          {% set raw_val = values[26] | int %}
+          {% set signed = raw_val - (65536 if raw_val >= 32768 else 0) %}
+          {{ (signed * 0.1) | round(1) }}
+        {% else %} unavailable {% endif %}
+      unit_of_measurement: V
+      device_class: voltage
+      state_class: measurement
+
+    # 39228–39229 – Battery1 Current (int32, signed, 0.001 A)
+    - name: FoxESS 39228 Battery1 Current
+      unique_id: foxess_39228_battery1_current
+      availability: >
+        {{ states('sensor.foxess_39201_39237_raw_block') not in ['unknown', 'unavailable', '']
+           and ',' in states('sensor.foxess_39201_39237_raw_block') }}
+      state: >
+        {% set raw = states('sensor.foxess_39201_39237_raw_block') %}
+        {% set values = raw.split(',') | map('float', 0) | list %}
+        {% if values | length >= 29 %}
+          {% set high = values[27] | int %}
+          {% set low = values[28] | int %}
+          {% set val = high * 65536 + low %}
+          {% set signed = val - (4294967296 if high >= 32768 else 0) %}
+          {{ (signed * 0.001) | round(3) }}
+        {% else %} unavailable {% endif %}
+      unit_of_measurement: A
+      device_class: current
+      state_class: measurement
+
+    # 39230–39231 – Battery1 Power
+    - name: FoxESS 39230 Battery1 Power
+      unique_id: foxess_39230_battery1_power
+      availability: >
+        {{ states('sensor.foxess_39201_39237_raw_block') not in ['unknown', 'unavailable', '']
+           and ',' in states('sensor.foxess_39201_39237_raw_block') }}
+      state: >
+        {% set raw = states('sensor.foxess_39201_39237_raw_block') %}
+        {% set values = raw.split(',') | map('float', 0) | list %}
+        {% if values | length >= 31 %}
+          {% set high = values[29] | int %}
+          {% set low = values[30] | int %}
+          {% set val = high * 65536 + low %}
+          {% set signed = val - (4294967296 if high >= 32768 else 0) %}
+          {{ signed | round(0) }}
+        {% else %} unavailable {% endif %}
+      unit_of_measurement: W
+      device_class: power
+      state_class: measurement
+
+    # 39232 – Battery2 Voltage (int16)
+    - name: FoxESS 39232 Battery2 Voltage
+      unique_id: foxess_39232_battery2_voltage
+      availability: >
+        {{ states('sensor.foxess_39201_39237_raw_block') not in ['unknown', 'unavailable', '']
+           and ',' in states('sensor.foxess_39201_39237_raw_block') }}
+      state: >
+        {% set raw = states('sensor.foxess_39201_39237_raw_block') %}
+        {% set values = raw.split(',') | map('float', 0) | list %}
+        {% if values | length >= 32 %}
+          {% set raw_val = values[31] | int %}
+          {% set signed = raw_val - (65536 if raw_val >= 32768 else 0) %}
+          {{ (signed * 0.1) | round(1) }}
+        {% else %} unavailable {% endif %}
+      unit_of_measurement: V
+      device_class: voltage
+      state_class: measurement
+
+    # 39233–39234 – Battery2 Current
+    - name: FoxESS 39233 Battery2 Current
+      unique_id: foxess_39233_battery2_current
+      availability: >
+        {{ states('sensor.foxess_39201_39237_raw_block') not in ['unknown', 'unavailable', '']
+           and ',' in states('sensor.foxess_39201_39237_raw_block') }}
+      state: >
+        {% set raw = states('sensor.foxess_39201_39237_raw_block') %}
+        {% set values = raw.split(',') | map('float', 0) | list %}
+        {% if values | length >= 34 %}
+          {% set high = values[32] | int %}
+          {% set low = values[33] | int %}
+          {% set val = high * 65536 + low %}
+          {% set signed = val - (4294967296 if high >= 32768 else 0) %}
+          {{ (signed * 0.001) | round(3) }}
+        {% else %} unavailable {% endif %}
+      unit_of_measurement: A
+      device_class: current
+      state_class: measurement
+
+    # 39235–39236 – Battery2 Power
+    - name: FoxESS 39235 Battery2 Power
+      unique_id: foxess_39235_battery2_power
+      availability: >
+        {{ states('sensor.foxess_39201_39237_raw_block') not in ['unknown', 'unavailable', '']
+           and ',' in states('sensor.foxess_39201_39237_raw_block') }}
+      state: >
+        {% set raw = states('sensor.foxess_39201_39237_raw_block') %}
+        {% set values = raw.split(',') | map('float', 0) | list %}
+        {% if values | length >= 36 %}
+          {% set high = values[34] | int %}
+          {% set low = values[35] | int %}
+          {% set val = high * 65536 + low %}
+          {% set signed = val - (4294967296 if high >= 32768 else 0) %}
+          {{ signed | round(0) }}
+        {% else %} unavailable {% endif %}
+      unit_of_measurement: W
+      device_class: power
+      state_class: measurement
+
+    # 39237 – Battery Combined Power (ostatni rejestr)
+    - name: FoxESS 39237 Battery Combined Power
+      unique_id: foxess_39237_battery_combined_power
+      availability: >
+        {{ states('sensor.foxess_39201_39237_raw_block') not in ['unknown', 'unavailable', '']
+           and ',' in states('sensor.foxess_39201_39237_raw_block') }}
+      state: >
+        {% set raw = states('sensor.foxess_39201_39237_raw_block') %}
+        {% set values = raw.split(',') | map('float', 0) | list %}
+        {% if values | length >= 38 %}
+          {% set high = values[36] | int %}
+          {% set low = values[37] | int %}
+          {% set val = high * 65536 + low %}
+          {% set signed = val - (4294967296 if high >= 32768 else 0) %}
+          {{ signed | round(0) }}
+        {% else %} unavailable {% endif %}
+      unit_of_measurement: W
+      device_class: power
+      state_class: measurement
+
+- sensor:
+
     # 39601 – rejestry 0-1
     # 39601 – PV Total Energy (Wh)
     - name: FoxESS 39601 PV Total Energy
