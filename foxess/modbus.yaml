@@ -1658,6 +1658,18 @@
       scan_interval: 60
 
     # 186–200: EPS – napięcia, prądy, moce, częstotliwość + Load
+    # 201–207: Bateria bezpośrednia – napięcie, prąd, moc
+    - name: FoxESS 39201-39237 Raw Block
+      unique_id: foxess_39201_39237_raw_block
+      slave: 247
+      address: 39201
+      input_type: holding
+      data_type: custom
+      structure: ">38H"
+      count: 38
+      scan_interval: 60
+
+    # 186–200: EPS – napięcia, prądy, moce, częstotliwość + Load
     - name: FoxESS 39201 EPS R Phase Voltage
       unique_id: foxess_39201_eps_r_phase_voltage
       slave: 247
